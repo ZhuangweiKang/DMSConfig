@@ -1,0 +1,8 @@
+{
+  "influxdb": {
+    "host": "fecbench-server-docker_influxdb_1",
+    "user": "indices_user",
+    "pwd": "indices_manager",
+    "database": "collectd_db"
+  }
+}

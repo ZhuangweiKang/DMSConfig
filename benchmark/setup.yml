@@ -1,0 +1,29 @@
+---
+# this playbook setup the DMSConfig benchmark cluster
+- hosts: all
+  tasks:
+  - name: clone repository
+    shell: git clone https://github.com/VUZhuangweiKang/DMSConfig.git
+  - name: change working directory to DMSConfig
+    command: chdir=/home/ubuntu/DMSConfig/benchmark
+  - name: clean cluster
+    shell: ./reset.sh
+
+- hosts: master
+  tasks:
+  - name: change working directory to DMSConfig
+    shell: chdir=/home/ubuntu/DMSConfig/benchmark
+  - name: init K8s master
+    shell: ./init.sh
+  - name: get and register join command
+    shell: kubeadm token create --print-join-command
+    register: join_cmd
+  - name: install python libraries
+    pip:
+      requirements: requirements.txt
+
+- hosts: worker
+  tasks:
+  - name: join the k8s cluster
+    become: yes
+    shell: join_cmd.stdout
