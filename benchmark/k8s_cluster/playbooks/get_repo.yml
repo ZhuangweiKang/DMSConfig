@@ -1,0 +1,5 @@
+---
+- hosts: all
+  tasks:
+  - name: clone DMSConfig repository
+    command: git clone https://github.com/ZhuangweiKang/DMSConfig.git

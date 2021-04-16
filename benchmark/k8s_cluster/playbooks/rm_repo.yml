@@ -1,0 +1,6 @@
+---
+- hosts: all
+  tasks:
+  - name: remove DMSConfig repository
+    become: yes
+    command: rm -r DMSConfig

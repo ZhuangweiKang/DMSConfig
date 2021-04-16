@@ -14,6 +14,6 @@ kubectl get pod -n kube-system
 
 # deploy cluster metrics monitor
 kubectl create ns kubernetes-dashboard
-kubectl create secret generic kubernetes-dashboard-certs --from-file=certs -n kubernetes-dashboard
-kubectl apply -f deploy/
-kubectl apply -f access/
+kubectl create secret generic kubernetes-dashboard-certs --from-file=dashboard/certs -n kubernetes-dashboard
+kubectl apply -f dashboard/deploy/
+kubectl apply -f dashboard/access/

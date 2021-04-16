@@ -20,12 +20,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c9396790-a94c-4acf-80d3-ea60dc0c0240" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/k8s_cluster/playbooks/join.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/k8s_cluster/playbooks/reset.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/k8s_cluster/playbooks/get_repo.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/k8s_cluster/playbooks/init.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/k8s_cluster/playbooks/rm_repo.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fecbench_inv" beforeDir="false" afterPath="$PROJECT_DIR$/dmsconfig_inv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/k8s_cluster/join.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/k8s_cluster/reset.sh" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/reset.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dmsconfig_inv" beforeDir="false" afterPath="$PROJECT_DIR$/dmsconfig_inv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/access/dashboard-admin-rbac.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dashboard/access/dashboard-admin-rbac.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/certs/dashboard.crt" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dashboard/certs/dashboard.crt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/certs/dashboard.csr" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dashboard/certs/dashboard.csr" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/certs/dashboard.key" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dashboard/certs/dashboard.key" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/deploy/dashboard-deployment.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dashboard/deploy/dashboard-deployment.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/deploy/dashboard-ingress.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dashboard/deploy/dashboard-ingress.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/deploy/dashboard-metrics-deployment.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dashboard/deploy/dashboard-metrics-deployment.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/deploy/dashboard-metrics-svc.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dashboard/deploy/dashboard-metrics-svc.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/deploy/dashboard-rbac.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dashboard/deploy/dashboard-rbac.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/deploy/dashboard-secret.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dashboard/deploy/dashboard-secret.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/deploy/dashboard-svc.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dashboard/deploy/dashboard-svc.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/deploy/metrics-server.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dashboard/deploy/metrics-server.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/init.sh" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/init.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/playbooks/join.yml" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/playbooks/join.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/k8s_cluster/playbooks/reset.yml" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/playbooks/reset.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,11 +77,11 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/k8s_cluster/dashboard" />
       <recent name="$PROJECT_DIR$/k8s_cluster" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/kafka" />
       <recent name="$PROJECT_DIR$/app/nyctaxi/consumer" />
-      <recent name="$PROJECT_DIR$/app/nyctaxi/producer" />
     </key>
   </component>
   <component name="RunManager">
@@ -111,7 +125,7 @@
       <updated>1618282337379</updated>
       <workItem from="1618282342120" duration="17121000" />
       <workItem from="1618348102188" duration="39813000" />
-      <workItem from="1618496028300" duration="20472000" />
+      <workItem from="1618496028300" duration="24216000" />
     </task>
     <servers />
   </component>

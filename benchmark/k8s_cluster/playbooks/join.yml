@@ -4,9 +4,13 @@
   - name: get and register join command
     shell: kubeadm token create --print-join-command
     register: join_cmd
+  - name: Copy join command to local file
+    local_action: copy content="{{ join_cmd.stdout_lines[0] }}" dest="./join_cmd"
 
 - hosts: worker
   tasks:
+  - name: copy join cmd file
+    copy: src=join_cmd dest=/tmp/join_cmd.sh mode=0777
   - name: join k8s cluster
     become: yes
-    command: join_cmd.stdout
+    command: sh /tmp/join_cmd.sh
