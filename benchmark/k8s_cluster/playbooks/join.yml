@@ -1,0 +1,12 @@
+---
+- hosts: master
+  tasks:
+  - name: get and register join command
+    shell: kubeadm token create --print-join-command
+    register: join_cmd
+
+- hosts: worker
+  tasks:
+  - name: join k8s cluster
+    become: yes
+    command: join_cmd.stdout

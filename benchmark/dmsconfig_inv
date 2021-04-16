@@ -1,11 +1,10 @@
 [localhost]
 localhost ansible_connection=local
 
-[server]
-192.168.88.84 ansible_ssh_private_key_file="/home/kangz1/.ssh/id_rsa" ansible_python_interpreter=/usr/bin/python3 ansible_user=root
-
-[client]
+[master]
 129.59.234.231 ansible_ssh_private_key_file="/home/kangz1/.ssh/isislab/id_rsa" ansible_python_interpreter=/usr/bin/python3 ansible_user=root
+
+[worker]
 129.59.234.232 ansible_ssh_private_key_file="/home/kangz1/.ssh/isislab/id_rsa" ansible_python_interpreter=/usr/bin/python3 ansible_user=root
 129.59.234.233 ansible_ssh_private_key_file="/home/kangz1/.ssh/isislab/id_rsa" ansible_python_interpreter=/usr/bin/python3 ansible_user=root
 129.59.234.234 ansible_ssh_private_key_file="/home/kangz1/.ssh/isislab/id_rsa" ansible_python_interpreter=/usr/bin/python3 ansible_user=root
@@ -13,5 +12,4 @@ localhost ansible_connection=local
 129.59.234.236 ansible_ssh_private_key_file="/home/kangz1/.ssh/isislab/id_rsa" ansible_python_interpreter=/usr/bin/python3 ansible_user=root
 129.59.234.237 ansible_ssh_private_key_file="/home/kangz1/.ssh/isislab/id_rsa" ansible_python_interpreter=/usr/bin/python3 ansible_user=root
 129.59.234.238 ansible_ssh_private_key_file="/home/kangz1/.ssh/isislab/id_rsa" ansible_python_interpreter=/usr/bin/python3 ansible_user=root
-129.59.234.227 ansible_ssh_private_key_file="/home/kangz1/.ssh/isislab/id_rsa" ansible_python_interpreter=/usr/bin/python3 ansible_user=root
 129.59.234.240 ansible_ssh_private_key_file="/home/kangz1/.ssh/isislab/id_rsa" ansible_python_interpreter=/usr/bin/python3 ansible_user=root

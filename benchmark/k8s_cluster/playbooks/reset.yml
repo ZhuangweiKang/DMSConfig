@@ -1,0 +1,6 @@
+---
+- hosts: worker
+  tasks:
+  - name: reset k8s cluster
+    become: yes
+    command: chdir=$HOME/DMSConfig/benchmark/ sh reset.sh
