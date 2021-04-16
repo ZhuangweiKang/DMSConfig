@@ -1,0 +1,6 @@
+---
+- hosts: all
+  tasks:
+  - name: install k8s cluster
+    command: chdir=$HOME/DMSConfig/benchmark/k8s_cluster sh install_k8s.sh
+    ignore_errors: yes
