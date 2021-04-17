@@ -12,6 +12,8 @@ from pyDOE import lhs
 import Monitor
 import utils
 
+DMSCONFIG_PRO_IMAGE = "zhuangweikang/nyctaxi_producer"
+DMSCONFIG_CON_IMAGE = "zhuangweikang/nyctaxi_consumer"
 DMSCONFIG_KAFKA_IMAGE = "zhuangweikang/dmsconfig-kafka:latest"
 DMSCONFIG_ZOOKEEPER_IMAGE = "zhuangweikang/dmsconfig-zookeeper:latest"
 
@@ -79,14 +81,14 @@ class GroupManager:
         # create pub pods
         for j in range(self.num_pubs):
             pod_name = 'g-%d-p-%d' % (self.gid, j)
-            self.k8s_api.create_pod(pod_name, DMSCONFIG_KAFKA_IMAGE, CLIENT_REQ_RES, None, node_label=self.this_group['nodes']['client'])
+            self.k8s_api.create_pod(pod_name, DMSCONFIG_PRO_IMAGE, CLIENT_REQ_RES, None, node_label=self.this_group['nodes']['client'])
             self.this_group['pods']['pub'].append(pod_name)
             self.logger.info(msg='Deploy producer %s' % pod_name)
 
         # create sub pods
         for j in range(self.num_subs):
             pod_name = 'g-%s-s-%d' % (self.gid, j)
-            self.k8s_api.create_pod(pod_name, DMSCONFIG_KAFKA_IMAGE, CLIENT_REQ_RES, None, node_label=self.this_group['nodes']['client'])
+            self.k8s_api.create_pod(pod_name, DMSCONFIG_CON_IMAGE, CLIENT_REQ_RES, None, node_label=self.this_group['nodes']['client'])
             self.this_group['pods']['sub'].append(pod_name)
             self.logger.info(msg='Deploy consumer %s' % pod_name)
 

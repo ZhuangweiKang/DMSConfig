@@ -20,12 +20,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c9396790-a94c-4acf-80d3-ea60dc0c0240" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/k8s_cluster/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/k8s_cluster/fecbench/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/k8s_cluster/fecbench/fecbench_inv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/k8s_cluster/playbooks/install_k8s.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dmsconfig_inv" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dmsconfig_inv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/Manager.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +55,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
+    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -111,7 +107,7 @@
       <updated>1618282337379</updated>
       <workItem from="1618282342120" duration="17121000" />
       <workItem from="1618348102188" duration="39813000" />
-      <workItem from="1618496028300" duration="33145000" />
+      <workItem from="1618496028300" duration="35919000" />
     </task>
     <servers />
   </component>
@@ -142,6 +138,10 @@
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="706" y="347" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1080@0.0.1920.1080" timestamp="1618555115092" />
+    <state x="100" y="100" width="1720" height="880" key="DiffContextDialog" timestamp="1618604656281">
+      <screen x="0" y="25" width="1440" height="800" />
+    </state>
+    <state x="100" y="100" width="1720" height="880" key="DiffContextDialog/0.25.1440.800@0.25.1440.800" timestamp="1618604656281" />
     <state width="1398" height="245" key="GridCell.Tab.0.bottom" timestamp="1618380591968">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
@@ -162,11 +162,11 @@
     </state>
     <state width="1398" height="245" key="GridCell.Tab.0.right/0.0.1440.900@0.0.1440.900" timestamp="1618380591968" />
     <state width="2518" height="424" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1618285696573" />
-    <state x="387" y="102" key="SettingsEditor" timestamp="1618539623309">
+    <state x="387" y="102" key="SettingsEditor" timestamp="1618606107453">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="290" y="85" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1618452976838" />
-    <state x="387" y="102" key="SettingsEditor/0.0.1920.1080@0.0.1920.1080" timestamp="1618539623309" />
+    <state x="387" y="102" key="SettingsEditor/0.0.1920.1080@0.0.1920.1080" timestamp="1618606107453" />
     <state x="789" y="356" key="SettingsEditor/0.0.2560.1440@0.0.2560.1440" timestamp="1618332621694" />
     <state x="625" y="241" width="670" height="676" key="search.everywhere.popup" timestamp="1618602752468">
       <screen x="0" y="0" width="1920" height="1080" />
