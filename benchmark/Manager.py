@@ -88,6 +88,7 @@ class GroupManager:
         # create sub pods
         for j in range(self.num_subs):
             pod_name = 'g-%s-s-%d' % (self.gid, j)
+            # pub pods mount volume: /home/ubuntu/dmsconfig -> /kafka/data
             self.k8s_api.create_pod(pod_name, DMSCONFIG_CON_IMAGE, CLIENT_REQ_RES, None, node_label=self.this_group['nodes']['client'])
             self.this_group['pods']['sub'].append(pod_name)
             self.logger.info(msg='Deploy consumer %s' % pod_name)
@@ -288,15 +289,19 @@ if __name__ == '__main__':
 
     columns = exp_sch.columns
 
+    '''
     k = 0
     cluster = K8sAPI.K8sCluster()
     worker_nodes = cluster.list_pods_name()[1:]
     group_size = int(exp_sch.shape[0] / args.parallel)
+    '''
+    with open('node_dis.json', 'r') as f:
+        worker_nodes = json.load(f)
+    group_size = int(exp_sch.shape[0] / 3)
     # distribute experiments to multiple groups
     for gid in range(args.groups):
         subset = exp_sch.iloc[range(gid * group_size, min((gid + 1) * group_size, exp_sch.shape[0]))].reset_index().T
-        gman = GroupManager(gid, worker_nodes[k], worker_nodes[k+1], args.num_pubs, args.num_brokers, args.num_subs)
+        gman = GroupManager(gid, worker_nodes[gid]['client'], worker_nodes[gid]['server'], args.num_pubs, args.num_brokers, args.num_subs)
         exp_thr = threading.Thread(target=gman.run, args=(subset, args.topic, args.execution_time,))
         exp_thr.start()
-        k += 2
 
