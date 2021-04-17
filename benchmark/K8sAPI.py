@@ -28,7 +28,12 @@ class K8sCluster:
 
         self.pods = {}
 
-    def create_pod(self, name, image, resource_limit, command, node_label):
+    def create_pod(self, name, image, resource_limit, command, node_label, volume=None):
+        volume_mounts = []
+        volumes = []
+        if volume:
+            volume_mounts = [client.V1VolumeMount(name="%s_volume" % name, mount_path=volume['container_path'])]
+            volumes = [client.V1Volume(name="%s_volume" % name, host_path=client.V1HostPathVolumeSource(path=volume['host_path']))]
         self.core_api().create_namespaced_pod(
             namespace="default",
             body=client.V1Pod(
@@ -51,16 +56,11 @@ class K8sCluster:
                             resources=client.V1ResourceRequirements(
                                 limits=resource_limit),
                             ports=[client.V1ContainerPort(container_port=prt) for prt in PSBENCH_PORTS],
-                            volume_mounts=[
-                                client.V1VolumeMount(name="%s_volume" % name, mount_path="data")
-                            ],
+                            volume_mounts=volume_mounts,
                             command=command
                         )
                     ],
-                    volumes=[
-                        client.V1Volume(name="%s_volume" % name,
-                                        host_path=client.V1HostPathVolumeSource(path='/home/ubuntu/dmsconfig'))
-                    ],
+                    volumes=volumes,
                     restart_policy="Never",
                     node_selector=dict(dmsconfig=node_label)
                 )

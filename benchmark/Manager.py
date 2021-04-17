@@ -81,14 +81,16 @@ class GroupManager:
         # create pub pods
         for j in range(self.num_pubs):
             pod_name = 'g-%d-p-%d' % (self.gid, j)
-            self.k8s_api.create_pod(pod_name, DMSCONFIG_PRO_IMAGE, CLIENT_REQ_RES, None, node_label=self.this_group['nodes']['client'])
+            # pub pods mount volume: /home/ubuntu/DMSConfig/benchmark/data -> /app/data
+            self.k8s_api.create_pod(pod_name, DMSCONFIG_PRO_IMAGE, CLIENT_REQ_RES, None,
+                                    node_label=self.this_group['nodes']['client'],
+                                    volume={'host_path': '/home/ubuntu/DMSConfig/benchmark/data', 'container_path': '/app/data'})
             self.this_group['pods']['pub'].append(pod_name)
             self.logger.info(msg='Deploy producer %s' % pod_name)
 
         # create sub pods
         for j in range(self.num_subs):
             pod_name = 'g-%s-s-%d' % (self.gid, j)
-            # pub pods mount volume: /home/ubuntu/dmsconfig -> /kafka/data
             self.k8s_api.create_pod(pod_name, DMSCONFIG_CON_IMAGE, CLIENT_REQ_RES, None, node_label=self.this_group['nodes']['client'])
             self.this_group['pods']['sub'].append(pod_name)
             self.logger.info(msg='Deploy consumer %s' % pod_name)
@@ -271,7 +273,7 @@ def sample_configs(budget):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Benchmark")
-    parser.add_argument('--groups', type=int, default=1, help='The number of groups')
+    parser.add_argument('--groups', type=int, default=3, help='The number of groups')
     parser.add_argument("--new", action="store_true", default=False, help="build model with new test plan")
     parser.add_argument("--from", type=int, default=0, help="start running test from the given index")
     parser.add_argument('--to', type=int, default=-1, help='stop running test at the given index')
