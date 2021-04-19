@@ -55,18 +55,13 @@ if __name__ == '__main__':
     delay = None
 
     # Create Spark Streaming context
-    ssc = StreamingContext(sparkContext=sc, batchDuration=args.fetch_max_wait_ms/1000)  # convert ms --> s
+    ssc = StreamingContext(sparkContext=sc, batchDuration=ceil(args.fetch_max_wait_ms/1000.0))  # convert ms --> s
 
     # Defining the checkpoint directory
     ssc.checkpoint("/root/tmp")
 
     # Connect to Kafka
-    kafkaStream = KafkaUtils.createDirectStream(ssc=ssc,
-                                                kafkaParams={
-                                                    "metadata.broker.list": args.bootstrap_servers,
-                                                    "fetch.min.bytes": args.fetch_min_bytes
-                                                },
-                                                topics=[args.topic])
+    kafkaStream = KafkaUtils.createDirectStream(ssc=ssc, kafkaParams={"metadata.broker.list": args.bootstrap_servers, "fetch.min.bytes": str(args.fetch_min_bytes)}, topics=[args.topic])
 
     # convert (lon, lat) to cell relative to the START_COR
     def get_route(record):
@@ -78,18 +73,18 @@ if __name__ == '__main__':
           f.write(str(latency)+'\n')
 
         # pickup_longitude, pickup_latitude
-        pick_lon = ceil(distance_between_cors(START_COR, (record[6], START_COR[1])) / CELL_SIZE)
-        pick_lat = ceil(distance_between_cors(START_COR, (START_COR[0], record[7])) / CELL_SIZE)
+        pick_lon = ceil(distance_between_cors(START_COR, (record[10], START_COR[1])) / CELL_SIZE)
+        pick_lat = ceil(distance_between_cors(START_COR, (START_COR[0], record[11])) / CELL_SIZE)
 
         # dropoff_longitude, dropoff_latitude
-        drop_lon = ceil(distance_between_cors(START_COR, (record[8], START_COR[1])) / CELL_SIZE)
-        drop_lat = ceil(distance_between_cors(START_COR, (START_COR[0], record[9])) / CELL_SIZE)
+        drop_lon = ceil(distance_between_cors(START_COR, (record[12], START_COR[1])) / CELL_SIZE)
+        drop_lat = ceil(distance_between_cors(START_COR, (START_COR[0], record[13])) / CELL_SIZE)
 
         # drop illegal cell
         if pick_lat > CELL_SIZE or pick_lon > CELL_SIZE or drop_lat > CELL_SIZE or drop_lon > CELL_SIZE:
             return None, None
         else:
-            return ('%s.%s' % (pick_lon, pick_lat), '%s.%s' % (drop_lon, drop_lat)), 1
+            return ('%d.%d' % (int(pick_lon), int(pick_lat)), '%d.%d' % (int(drop_lon), int(drop_lat))), 1
 
     # define the update function
     def updateState(new, old):
@@ -102,9 +97,10 @@ if __name__ == '__main__':
         top_10_routes = []
         if rdd.count() > 0:
             out = rdd.repartition(1).take(10)
-            top_10_routes.append([out[0][0], out[0][1], out[1]])
-        top_10_routes = pd.DataFrame(top_10_routes, columns=['start_cell', 'end_cell', 'count'])
-        top_10_routes.to_csv('top10.csv')
+            for route in out:
+                top_10_routes.append([route[0][0], route[0][1], route[1]])
+            top_10_routes = pd.DataFrame(top_10_routes, columns=['start_cell', 'end_cell', 'count'])
+            top_10_routes.to_csv('top10.csv', index=None)
 
     # main process
     kafkaStream.map(lambda record: get_route(record)) \
