@@ -27,14 +27,19 @@ class K8sCluster:
                     # self.label_node(node, addr.address)
 
         self.pods = {}
+        self.services = {}
 
-    def create_pod(self, name, image, resource_limit, command, node_label, volume=None):
+    def create_pod(self, name, image, resource_limit, command, node_label, volume=None, envs=None):
         volume_mounts = []
         volumes = []
         if volume:
-            volume_mounts = [client.V1VolumeMount(name="%s_volume" % name, mount_path=volume['container_path'])]
-            volumes = [client.V1Volume(name="%s_volume" % name, host_path=client.V1HostPathVolumeSource(path=volume['host_path']))]
-        self.core_api().create_namespaced_pod(
+            volume_mounts = [client.V1VolumeMount(name="%s-volume" % name, mount_path=volume['container_path'])]
+            volumes = [client.V1Volume(name="%s-volume" % name, host_path=client.V1HostPathVolumeSource(path=volume['host_path']))]
+        pod_envs = []
+        if envs:
+            for env in envs:
+                pod_envs.append(client.V1EnvVar(name=env['name'], value=env['value']))
+        pod = self.core_api().create_namespaced_pod(
             namespace="default",
             body=client.V1Pod(
                 api_version="v1",
@@ -57,6 +62,7 @@ class K8sCluster:
                                 limits=resource_limit),
                             ports=[client.V1ContainerPort(container_port=prt) for prt in PSBENCH_PORTS],
                             volume_mounts=volume_mounts,
+                            env=pod_envs,
                             command=command
                         )
                     ],
@@ -65,6 +71,7 @@ class K8sCluster:
                     node_selector=dict(dmsconfig=node_label)
                 )
             ))
+        self.pods.update({name: pod})
 
     def exec_pod(self, pod, command, detach=True):
         if type(command) == list:
@@ -87,6 +94,7 @@ class K8sCluster:
                     selector={'app': svc_name},
                     ports=[client.V1ServicePort(name=str(prt), port=prt) for prt in svc_ports])
             ))
+        self.services.update({svc_name: svc})
         return svc.spec.cluster_ip
 
     def get_free_rsrc(self):
@@ -195,18 +203,16 @@ class K8sCluster:
             }
         })
 
-    # @TBD
-    def get_node_label(self, node):
-        pass
-
     def delete_pod(self, pod_name):
         try:
             self.core_api().delete_namespaced_pod(name=pod_name, namespace='default', grace_period_seconds=0)
+            del self.pods[pod_name]
         except Exception as ex:
             print('Error when deleting pod: %s, info: %s' % (pod_name, ex))
 
     def delete_svc(self, svc_name):
         try:
             self.core_api().delete_namespaced_service(name=svc_name, namespace='default', grace_period_seconds=0)
+            del self.services[svc_name]
         except Exception as ex:
             print('Error when deleting service: %s, info: %s' % (svc_name, ex))

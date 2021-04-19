@@ -1,0 +1,19 @@
+---
+- hosts: client
+  tasks:
+  - name: remove old data directory if exist
+    command: rm -rf $HOME/DMSConfig/benchmark/data 
+  - name: make data directory
+    command: mkdir /home/ubuntu/DMSConfig/benchmark/data/
+    ignore_errors: yes
+  - name: install required tools
+    apt:
+      pkg: 
+      - wget
+      - p7zip-full
+      state: present
+      force: yes
+  - name: download data file
+    command: chdir=$HOME/DMSConfig/benchmark/data  wget https://archive.org/download/nycTaxiTripData2013/trip_data.7z
+  - name: unzip data file
+    command: 7za e trip_data.7z

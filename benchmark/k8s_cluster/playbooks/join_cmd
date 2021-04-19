@@ -1,0 +1,1 @@
+kubeadm join 129.59.234.231:6443 --token buvy6g.4brcfy71wzpk72bk     --discovery-token-ca-cert-hash sha256:0e088406a9af707682e69d482eae0790d64a02ad6861948549b4ac24cc625a38 

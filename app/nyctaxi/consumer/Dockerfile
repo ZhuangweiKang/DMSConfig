@@ -15,7 +15,7 @@ COPY * app/
 WORKDIR /app
 
 # install pyspark
-RUN apt-get install -y python3-pip
-RUN pip3 install -r requirements.txt
+RUN apt-get install -y python python-pip
+RUN pip install -r requirements.txt
 RUN chmod +x *
 CMD bash

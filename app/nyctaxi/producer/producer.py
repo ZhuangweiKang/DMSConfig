@@ -5,7 +5,7 @@ from kafka import KafkaProducer
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--bootstrap_servers', type=str, required=True)
-    parser.add_argument('--payload_file', type=str, required=True, default='data/data.csv')
+    parser.add_argument('--payload_file', type=str, required=True)
     parser.add_argument('--topic', type=str, default='nyc_taxi')
     parser.add_argument('--sleep', type=int, default=0, help='sleep in seconds between sends')
 

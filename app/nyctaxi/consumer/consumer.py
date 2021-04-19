@@ -55,7 +55,7 @@ if __name__ == '__main__':
     delay = None
 
     # Create Spark Streaming context
-    ssc = StreamingContext(sparkContext=sc, batchDuration=3)
+    ssc = StreamingContext(sparkContext=sc, batchDuration=args.fetch_max_wait_ms/1000)  # convert ms --> s
 
     # Defining the checkpoint directory
     ssc.checkpoint("/root/tmp")
@@ -64,7 +64,6 @@ if __name__ == '__main__':
     kafkaStream = KafkaUtils.createDirectStream(ssc=ssc,
                                                 kafkaParams={
                                                     "metadata.broker.list": args.bootstrap_servers,
-                                                    "fetch.max.wait.ms": args.fetch_max_wait_ms,
                                                     "fetch.min.bytes": args.fetch_min_bytes
                                                 },
                                                 topics=[args.topic])
