@@ -1,6 +1,8 @@
+import os
 import argparse
 import time
 import pandas as pd
+import numpy as np
 from pyspark import SparkContext, SparkConf
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
@@ -30,6 +32,22 @@ def distance_between_cors(cor1, cor2):
 
     distance = R * c
     return abs(1000 * distance)
+
+def process_data():
+    data = pd.read_csv('latency.log').to_numpy().squeeze()
+    min_val = np.min(data)
+    max_val = np.max(data)
+    median_val = np.median(data)
+    mean_val = np.mean(data)
+    std_val = np.std(data)
+    p_vals = np.percentile(data, [25, 50, 75, 90, 95, 99])
+
+    vals = [min_val, max_val, median_val, mean_val, std_val]
+    vals.extend(p_vals)
+    vals = pd.DataFrame(vals).round(2).T
+    vals.columns = ['min','max','median','mean','std','25th','50th','75th','90th','95th','99th']
+    vals.to_csv('latency.csv', index=None)
+    os.system('rm latency.log')
 
 
 if __name__ == '__main__':
@@ -113,3 +131,5 @@ if __name__ == '__main__':
     ssc.start()
     ssc.awaitTerminationOrTimeout(args.execution_time)
     ssc.stop()
+    process_data()
+    

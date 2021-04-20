@@ -139,23 +139,6 @@ class GroupManager:
                 "kubectl cp runtime/%s-server.properties %s:/kafka/config/server.properties" % (pod, pod), shell=True)
             self.logger.info('Broker configuration: %s' % str(self.broker_knobs))
 
-    # def create_topic(self, topic):
-    #     for i, broker in enumerate(self.this_group['pods']['broker']):
-    #         cmd = ['sh', 'bin/kafka-topics.sh',
-    #                '--bootstrap-server', '%s:9092' % self.this_group['services']['kafka'][i],
-    #                '--zookeeper', '%s:2181' % self.this_group['services']['zookeeper'][0],
-    #                '--create', '--topic', topic,
-    #                '--replication-factor', len(self.this_group['pods']['broker']) - 1]
-    #         for key in self.topic_knobs:
-    #             cmd.append('--%s' % key)
-    #             cmd.append(self.topic_knobs[key])
-    #         self.k8s_api.exec_pod(broker, cmd)
-    #
-    #         cmd = ['sh', 'bin/kafka-topics.sh', '--list',
-    #                '--zookeeper', '%s:2181' % self.this_group['services']['zookeeper'][0]]
-    #         topic = self.k8s_api.exec_pod(broker, cmd)
-    #         self.logger.info(msg='Create topic %s in broker %s' % (topic, broker))
-
     def start_kafka(self):
         # start zookeeper
         cmd = ['sh', 'bin/zookeeper-server-start.sh', '-daemon', 'config/zookeeper.properties']
@@ -187,7 +170,8 @@ class GroupManager:
             cmd = ['python3', 'producer.py',
                    '--topic', topic,
                    '--payload_file', payload,
-                   '--bootstrap_servers', brokers_str]
+                   '--bootstrap_servers', brokers_str,
+                   '--execution_time', str(execution_time)]
             for knob in self.pub_knobs:
                 cmd.append('--%s' % knob)
                 cmd.append(self.pub_knobs[knob])
@@ -195,6 +179,7 @@ class GroupManager:
             self.logger.info(msg='Producer %s executes: %s' % (pod, ' '.join(cmd)))
             self.k8s_api.exec_pod(pod, cmd)
 
+        latency_data = []
         for j, pod in enumerate(self.this_group['pods']['sub']):
             cmd = ['spark-submit',
                    '--packages', 'org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.7',
@@ -208,6 +193,8 @@ class GroupManager:
 
             self.logger.info(msg='Consumer %s executes: %s' % (pod, ' '.join(cmd)))
             self.k8s_api.exec_pod(pod, cmd)
+            # copy latency results to master
+            os.system('kubectl cp %s:/app/latency.csv %s-latency.csv' % pod)
 
     def stop_exp(self):
         stop_zk = ['sh', 'bin/zookeeper-server-stop.sh']
@@ -231,28 +218,32 @@ class GroupManager:
                 self.logger.error(
                     msg='Failed to stop zookeeper server %s(%s)' % (broker, kafka_pid))
 
-    def process_data(self, execution_time, config_index):
+    def process_data(self, pod, execution_time, config_index):
         with open('fecbench.json') as f:
             influxdb_settings = json.load(f)['influxdb']
+        
         client = InfluxDBClient(host=find_influxdb(influxdb_settings['host']), port=8086,
                                 username=influxdb_settings['user'],
                                 password=influxdb_settings['pwd'], database=influxdb_settings['database'])
-        kafka_metrics_query_str = 'SELECT * FROM "collectd_db"."autogen"."docker_kafka_metrics" WHERE time > now()-%ds AND time < now() GROUP BY "instance"' % execution_time
+        kafka_metrics_query_str = 'SELECT * FROM "docker_kafka_metrics" WHERE time > now()-%ds AND time < now() GROUP BY "instance"' % execution_time
         kafka_metrics = client.query(query=kafka_metrics_query_str, database=influxdb_settings['database'])
         kafka_raw_metrics = kafka_metrics.raw['series']
-        docker_metrics_query_str = 'SELECT * FROM "collectd_db"."autogen"."container_metrics" WHERE time > now()-%ds AND time < now() GROUP BY "instance" ' % execution_time
-        docker_metrics = client.query(query=docker_metrics_query_str, database=influxdb_settings['database'])
         for i in range(len(kafka_raw_metrics)):
             instance = kafka_raw_metrics[i]['tags']['instance']
             try:
-                kafka_metrics = list(kafka_metrics.get_points(tags={"instance": instance}))
-                kafka_metrics = pd.DataFrame(kafka_metrics)
-                kafka_metrics = dftr.format_kafka_metrics(kafka_metrics)
-                docker_metrics = list(docker_metrics.get_points(tags={"instance": instance}))
-                docker_metrics = pd.DataFrame(docker_metrics)
-                docker_metrics = dftr.format_container_metrics(docker_metrics, int(BROKER_REQ_RES['cpu']))
-                kafka_metrics.to_csv('data/group_%d_exp_%d_kafka.csv' % (self.gid, config_index))
-                docker_metrics.to_csv('data/group_%d_exp_%d_container.csv' % (self.gid, config_index))
+                if pod in instance:
+                    kafka_metrics = list(kafka_metrics.get_points(tags={"instance": instance}))
+                    kafka_metrics = pd.DataFrame(kafka_metrics)
+                    kafka_metrics = dftr.format_kafka_metrics(kafka_metrics)
+                    state_meta = pd.read_csv('meta/state_meta.csv')['name'].to_list()
+                    kafka_metrics = kafka_metrics[state_meta]
+
+                    latency_metrics = pd.read_csv('%s_latency.csv' % pod)
+                    latency_metrics.columns = ['latency_%s' % m for m in latency_metrics.columns]
+                    metrics = pd.concat([kafka_metrics, latency_metrics], axis=1)
+                    metrics['id'] = config_index
+                    metrics.to_csv('data/group_%d_exp_%d.csv' % (self.gid, config_index))
+                    break
             except Exception:
                 traceback.print_exc()
 
@@ -284,12 +275,12 @@ class GroupManager:
                 self.logger.info(msg='Starting experiment: %d' % index)
                 self.start_kafka()
                 self.config_kafka()
-                # self.create_topic(topic)
                 self.start_exp(topic, execution_time, payload)
                 time.sleep(execution_time)
                 self.stop_exp()
                 self.logger.info(msg='Done')
-                self.process_data(execution_time, index)
+                # TODO: do we need metrics of followers?
+                self.process_data(self.this_group['pods']['broker'][0], execution_time, index)
         except Exception:
             traceback.print_exc()
         finally:
@@ -305,7 +296,7 @@ def sample_configs(budget):
     meta_info = pd.read_csv('meta/knob_meta.csv')
     knobs = pd.DataFrame(lhs(meta_info.shape[0], samples=budget, criterion="maximin"))
     knobs = knobs.apply(
-        lambda raw_knobs: (raw_knobs * (meta_info['max'] - meta_info['min']) * meta_info['unit']).round(2).astype(
+        lambda raw_knobs: ((raw_knobs*(meta_info['max']-meta_info['min'])+meta_info['min']) * meta_info['unit']).round(2).astype(
             int), axis=1)
     knobs.columns = meta_info['knob']
     knobs.to_csv(path_or_buf="schedule.csv", index=None)
