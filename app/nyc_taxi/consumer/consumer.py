@@ -33,22 +33,6 @@ def distance_between_cors(cor1, cor2):
     distance = R * c
     return abs(1000 * distance)
 
-def process_data():
-    data = pd.read_csv('latency.log').to_numpy().squeeze()
-    min_val = np.min(data)
-    max_val = np.max(data)
-    median_val = np.median(data)
-    mean_val = np.mean(data)
-    std_val = np.std(data)
-    p_vals = np.percentile(data, [25, 50, 75, 90, 95, 99])
-
-    vals = [min_val, max_val, median_val, mean_val, std_val]
-    vals.extend(p_vals)
-    vals = pd.DataFrame(vals).round(2).T
-    vals.columns = ['min','max','median','mean','std','25th','50th','75th','90th','95th','99th']
-    vals.to_csv('latency.csv', index=None)
-    os.system('rm latency.log')
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -56,13 +40,15 @@ if __name__ == '__main__':
     parser.add_argument('--topic', type=str, default='nyc_taxi')
     parser.add_argument('--execution_time', type=int, default=120)
 
-    parser.add_argument('--fetch_max_wait_ms', type=int, default=500)
-    parser.add_argument('--fetch_min_bytes', type=int, default=16384)
+    parser.add_argument('--batch_interval', type=int, default=1)
     args = parser.parse_args()
 
     conf = SparkConf().setAppName('nyc_taxi').set('spark.hadoop.validateOutputSpecs', False)
     sc = SparkContext(conf=conf)
     sc.setLogLevel("WARN")
+
+    if os.path.exists('latency.log'):
+        os.system('rm latency.log')
 
     START_COR = (-74.913585, 41.474937)
     CELL_SIZE = 500
@@ -73,17 +59,17 @@ if __name__ == '__main__':
     delay = None
 
     # Create Spark Streaming context
-    ssc = StreamingContext(sparkContext=sc, batchDuration=ceil(args.fetch_max_wait_ms/1000.0))  # convert ms --> s
+    ssc = StreamingContext(sparkContext=sc, batchDuration=args.batch_interval)
 
     # Defining the checkpoint directory
     ssc.checkpoint("/root/tmp")
 
     # Connect to Kafka
-    kafkaStream = KafkaUtils.createDirectStream(ssc=ssc, kafkaParams={"metadata.broker.list": args.bootstrap_servers, "fetch.min.bytes": str(args.fetch_min_bytes)}, topics=[args.topic])
+    kafkaStream = KafkaUtils.createDirectStream(ssc=ssc, kafkaParams={"metadata.broker.list": args.bootstrap_servers}, topics=[args.topic])
 
     # convert (lon, lat) to cell relative to the START_COR
     def get_route(record):
-        record = record[1].split(',')
+        record = record[1].decode().split(',')
 
         # record latency
         with open('latency.log', 'a+') as f:
@@ -131,5 +117,4 @@ if __name__ == '__main__':
     ssc.start()
     ssc.awaitTerminationOrTimeout(args.execution_time)
     ssc.stop()
-    process_data()
     
