@@ -73,7 +73,7 @@ class K8sCluster:
             ))
         self.pods.update({name: pod})
 
-    def exec_pod(self, pod, command, detach=True):
+    def exec_pod(self, pod, command, detach=False):
         if type(command) == list:
             command = ' '.join([str(x) for x in command])
         if detach:

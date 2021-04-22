@@ -8,5 +8,4 @@ RUN mv kafka_2.13-2.7.0 /kafka
 WORKDIR /kafka
 RUN rm -r site-docs
 RUN rm -r bin/windows
-ENV JMX_PORT=9999
 CMD bash

@@ -36,8 +36,8 @@ def find_influxdb(influxdb):
 
 
 def clean():
-    os.system('kubectl delete pods --all')
-    os.system('kubectl delete services --all')
+    os.system('kubectl delete pods --force --all')
+    os.system('kubectl delete services --force --all')
 
 
 class GroupManager:
@@ -72,25 +72,37 @@ class GroupManager:
         self.k8s_api.label_node(node=self.this_group['nodes']['server']['host'], label_val=server_label)
         self.this_group['nodes']['server']['label'] = server_label
 
-    def deploy_kafka(self):
-        # create zookeeper pod
+    def deploy_services(self):
         pod_name = 'g-%d-zk' % self.gid
         cluster_ip = self.k8s_api.create_svc(svc_name=pod_name, svc_ports=[2181])
-        self.k8s_api.create_pod(name=pod_name, image=DMSCONFIG_KAFKA_IMAGE, resource_limit=ZOOKEEPER_REQ_RES,
-                                command=None, node_label=self.this_group['nodes']['server']['label'])
-        self.this_group['pods']['zookeeper'].append(pod_name)
         self.this_group['services']['zookeeper'].append(cluster_ip)
-
-        # create a K8s Service for each Kafka broker
         for j in range(self.num_brokers):
             pod_name = 'g-%d-b-%d' % (self.gid, j)
             cluster_ip = self.k8s_api.create_svc(svc_name=pod_name, svc_ports=[9092])
-            self.k8s_api.create_pod(pod_name, DMSCONFIG_KAFKA_IMAGE, BROKER_REQ_RES, None,
-                                    node_label=self.this_group['nodes']['server']['label'])
-            self.this_group['pods']['broker'].append(pod_name)
             self.this_group['services']['kafka'].append(cluster_ip)
 
-        # create pub pods
+    def deploy_kafka(self):
+        pod_name = 'g-%d-zk' % self.gid
+        self.k8s_api.create_pod(name=pod_name, image=DMSCONFIG_KAFKA_IMAGE, resource_limit=ZOOKEEPER_REQ_RES,
+                                command=None, node_label=self.this_group['nodes']['server']['label'])
+        self.this_group['pods']['zookeeper'].append(pod_name)
+        
+        for j in range(self.num_brokers):
+            pod_name = 'g-%d-b-%d' % (self.gid, j)
+            envs = [{'name': 'JMX_PORT', 'value': '9999'}]
+            self.k8s_api.create_pod(pod_name, DMSCONFIG_KAFKA_IMAGE, BROKER_REQ_RES, None,
+                                    node_label=self.this_group['nodes']['server']['label'], envs=envs)
+            self.this_group['pods']['broker'].append(pod_name)
+    
+    def delete_kafka(self):
+        self.k8s_api.delete_pod(self.this_group['pods']['zookeeper'][0])
+        for pod in self.this_group['pods']['broker']:
+            self.k8s_api.delete_pod(pod)
+        self.this_group['pods']['broker'] = []
+        self.this_group['pods']['zookeeper'] = []
+
+    def deploy_clients(self):
+         # create pub pods
         for j in range(self.num_pubs):
             pod_name = 'g-%d-p-%d' % (self.gid, j)
             # pub pods mount volume: /home/ubuntu/DMSConfig/benchmark/data -> /app/data
@@ -116,37 +128,42 @@ class GroupManager:
                 "listeners": "PLAINTEXT://0.0.0.0:9092",
                 "advertised.listeners": "PLAINTEXT://%s:9092" % self.this_group['services']['kafka'][j],
                 "zookeeper.connect": "%s:2181" % self.this_group['services']['zookeeper'][0],
+                "delete.topic.enable": 'true',
                 "log.dirs": "/kafka/logs"
             })
 
-            # populate Broker config file
             with open('runtime/%s-server.properties' % pod, 'w') as f:
                 for key in self.broker_knobs:
                     f.write('%s = %s\n' % (key, self.broker_knobs[key]))
 
-            # copy broker config file into pod
             subprocess.check_output(
                 "kubectl cp runtime/%s-server.properties %s:/kafka/config/server.properties" % (pod, pod), shell=True)
 
-    def start_kafka(self):
-        # start zookeeper
-        cmd = 'bin/zookeeper-server-start.sh -daemon config/zookeeper.properties'
+    def start_zk(self):
+        cmd = './bin/zookeeper-server-start.sh -daemon config/zookeeper.properties'
         self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], cmd)
         while True:
-            try:
-                self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], 'pgrep java', detach=False)
+            if len(self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], 'pgrep java')) > 0:
                 break
-            except:
-                pass
+
+    def start_kafka(self):
         for broker in self.this_group['pods']['broker']:
-            cmd = 'bin/kafka-server-start.sh -daemon config/server.properties'
-            self.k8s_api.exec_pod(broker, cmd)
-            while True:
-                try:
-                    self.k8s_api.exec_pod(broker, 'pgrep java', detach=False)
-                    break
-                except:
-                    pass
+            cmd = './bin/kafka-server-start.sh -daemon config/server.properties'
+            self.k8s_api.exec_pod(broker, cmd, detach=True)
+        # wait until all brokers are avaliable in zookeeper
+        while True:
+            cmd = './bin/zookeeper-shell.sh localhost:2181 ls /brokers/ids | tail -n 1'
+            avail_brokers = self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], cmd)
+            if len(self.this_group['pods']['broker']) == len(avail_brokers.split(',')):
+                break
+
+    def create_topic(self, topic):
+        cmd = ['./bin/kafka-topics.sh --zookeeper localhost:2181',
+                '--create', '--topic', topic,
+                '--replication-factor %d' % (len(self.this_group['pods']['broker']))]
+        for key in self.topic_knobs:
+            cmd.append('--%s %s' % (key, str(self.topic_knobs[key])))
+        self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], ' '.join(cmd))
 
     def start_exp(self, topic, execution_time, payload):
         brokers_str = ','.join(['%s:9092' % svc for svc in self.this_group['services']['kafka']])
@@ -157,11 +174,10 @@ class GroupManager:
                    '--bootstrap_servers', brokers_str,
                    '--execution_time', str(execution_time)]
             for knob in self.pub_knobs:
-                cmd.append('--%s' % knob)
-                cmd.append(self.pub_knobs[knob])
+                cmd.append('--%s %s' % (knob, str(self.pub_knobs[knob])))
 
-            self.logger.info(msg='Producer %s executes: %s' % (pod, ' '.join(cmd)))
-            self.k8s_api.exec_pod(pod, cmd)
+            # self.logger.info(msg='Producer %s executes: %s' % (pod, ' '.join(cmd)))
+            self.k8s_api.exec_pod(pod, cmd, detach=True)
 
         for pod in self.this_group['pods']['sub']:
             cmd = ['spark-submit',
@@ -171,28 +187,14 @@ class GroupManager:
                    '--topic', topic,
                    '--execution_time', str(execution_time)]
             for knob in self.sub_knobs:
-                cmd.append('--%s' % knob)
-                cmd.append(self.sub_knobs[knob])
+                cmd.append('--%s %s' % (knob, str(self.sub_knobs[knob])))
 
-            self.logger.info(msg='Consumer %s executes: %s' % (pod, ' '.join(cmd)))
-            self.k8s_api.exec_pod(pod, cmd)
+            # self.logger.info(msg='Consumer %s executes: %s' % (pod, ' '.join(cmd)))
+            self.k8s_api.exec_pod(pod, cmd, detach=True)
         
-        time.sleep(execution_time)
+        time.sleep(execution_time+5)
         for pod in self.this_group['pods']['sub']:
-            while True:
-                try:
-                    self.k8s_api.exec_pod(pod, 'pgrep java', detach=False)
-                except Exception:  # return code is non zero if the no java process is running
-                    # copy latency results to master
-                    os.system('kubectl cp %s:latency.log %s-latency.log' % (pod, pod))
-                    break
-
-    def stop_exp(self):
-        stop_zk = 'bin/zookeeper-server-stop.sh'
-        self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], stop_zk)
-        for broker in self.this_group['pods']['broker']:
-            stop_kafka = 'bin/kafka-server-stop.sh'
-            self.k8s_api.exec_pod(broker, stop_kafka)
+            os.system('kubectl cp %s:latency.log %s-latency.log' % (pod, pod))
 
     def process_state_metrics(self, pod, execution_time, config_index):
         with open('fecbench.json') as f:
@@ -227,52 +229,48 @@ class GroupManager:
         mean_val = np.mean(data)
         std_val = np.std(data)
         p_vals = np.percentile(data, [25, 50, 75, 90, 95, 99])
-
-        vals = [min_val, max_val, median_val, mean_val, std_val]
+        vals = [config_index, min_val, max_val, median_val, mean_val, std_val]
         vals.extend(p_vals)
-        vals = pd.DataFrame(vals).round(2).T
-        
+        vals = ','.join([str(x) for x in vals])
         with open('metrics/latency.csv', 'a') as f:
-            f.write('%d,%s\n' % (config_index, ','.join([str(x) for x in vals.iloc[0].to_list()])))
+            f.write(vals+'\n')
 
     def run(self, schedule, topic, execution_time, payload):
         try:
             self.config_cluster()
-            self.deploy_kafka()
-            all_pods = []
-            for e in self.this_group['pods']:
-                all_pods.extend(self.this_group['pods'][e])
-            self.k8s_api.wait_pods_ready(all_pods)
-
+            self.deploy_services()
+            self.deploy_clients()
             columns = list(schedule.columns[2:])
             for _, exp in schedule.iterrows():
                 for col in columns:
                     knob_entity = col.split('->')[0]
                     knob_name = col.split('->')[1]
-                    if knob_entity == 'pub':
+                    if knob_entity == 'producer':
                         self.pub_knobs.update({knob_name: exp[col]})
                     elif knob_entity == 'broker':
                         self.broker_knobs.update({knob_name: exp[col]})
-                    elif knob_entity == 'sub':
+                    elif knob_entity == 'consumer':
                         self.sub_knobs.update({knob_name: exp[col]})
                     elif knob_entity == 'topic':
                         self.topic_knobs.update({knob_name: exp[col]})
 
                 self.logger.info(msg='Config index: %d' % exp['index'])
+                self.deploy_kafka()
+                self.k8s_api.wait_pods_ready(self.this_group['pods']['broker'])
                 self.config_kafka()
+                self.start_zk()
                 self.start_kafka()
+                self.create_topic(topic)
                 self.start_exp(topic, execution_time, payload)
-                self.stop_exp()
                 self.logger.info(msg='Done')
                 # TODO: do we need metrics of followers?
                 self.process_state_metrics(self.this_group['pods']['broker'][0], execution_time, exp['index'])
                 self.process_latency_metrics(self.this_group['pods']['sub'][0], exp['index'])
-                self.logger.info(msg='-------------------------')
+                self.delete_kafka()
         except Exception:
             traceback.print_exc()
         finally:
             clean()
-
 
 def sample_configs(budget):
     """
@@ -283,8 +281,7 @@ def sample_configs(budget):
     meta_info = pd.read_csv('meta/knob_meta.csv')
     knobs = pd.DataFrame(lhs(meta_info.shape[0], samples=budget, criterion="maximin"))
     knobs = knobs.apply(
-        lambda raw_knobs: ((raw_knobs*(meta_info['max']-meta_info['min'])+meta_info['min']) * meta_info['unit']).round(2).astype(
-            int), axis=1)
+        lambda raw_knobs: (np.ceil(raw_knobs*(meta_info['max']-meta_info['min'])+meta_info['min']) * meta_info['unit']).astype(int), axis=1)
     knobs.columns = meta_info['knob']
     knobs.reset_index(inplace=True)
     knobs.to_csv(path_or_buf="schedule.csv", index=None)
