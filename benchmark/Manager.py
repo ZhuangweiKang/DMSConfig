@@ -83,9 +83,9 @@ class GroupManager:
 
     def deploy_kafka(self):
         pod_name = 'g-%d-zk' % self.gid
-        self.k8s_api.create_pod(name=pod_name, image=DMSCONFIG_KAFKA_IMAGE, resource_limit=ZOOKEEPER_REQ_RES,
-                                command=None, node_label=self.this_group['nodes']['server']['label'])
-        self.this_group['pods']['zookeeper'].append(pod_name)
+        # self.k8s_api.create_pod(name=pod_name, image=DMSCONFIG_KAFKA_IMAGE, resource_limit=ZOOKEEPER_REQ_RES,
+        #                         command=None, node_label=self.this_group['nodes']['server']['label'])
+        # self.this_group['pods']['zookeeper'].append(pod_name)
         
         for j in range(self.num_brokers):
             pod_name = 'g-%d-b-%d' % (self.gid, j)
@@ -93,9 +93,10 @@ class GroupManager:
             self.k8s_api.create_pod(pod_name, DMSCONFIG_KAFKA_IMAGE, BROKER_REQ_RES, None,
                                     node_label=self.this_group['nodes']['server']['label'], envs=envs)
             self.this_group['pods']['broker'].append(pod_name)
+            self.this_group['pods']['zookeeper'].append(pod_name)
     
     def delete_kafka(self):
-        self.k8s_api.delete_pod(self.this_group['pods']['zookeeper'][0])
+        # self.k8s_api.delete_pod(self.this_group['pods']['zookeeper'][0])
         for pod in self.this_group['pods']['broker']:
             self.k8s_api.delete_pod(pod)
         self.this_group['pods']['broker'] = []
@@ -165,6 +166,13 @@ class GroupManager:
             cmd.append('--%s %s' % (key, str(self.topic_knobs[key])))
         self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], ' '.join(cmd))
 
+    def limit_bandwidth(self):
+        all_pods = []
+        for e in self.this_group['pods']:
+            all_pods.extend(self.this_group['pods'][e])
+        for p in pods:
+            self.k8s_api.limit_bw(p, 1000)
+
     def start_exp(self, topic, execution_time, payload):
         brokers_str = ','.join(['%s:9092' % svc for svc in self.this_group['services']['kafka']])
         for pod in self.this_group['pods']['pub']:
@@ -215,8 +223,10 @@ class GroupManager:
                     kafka_metrics = dftr.format_kafka_metrics(kafka_metrics)
                     state_meta = pd.read_csv('meta/state_meta.csv')['name'].to_list()
                     kafka_metrics = kafka_metrics[state_meta]
-                    with open('metrics/states.csv', 'a') as f:
-                        f.write('%d,%s\n' % (config_index, ','.join([str(x) for x in kafka_metrics.iloc[0].to_list()])))
+                    outputs = ['min','max','median','mean','std','25th','50th','75th','90th','95th','99th']
+                    for j, metric in enumerate(outputs):
+                        with open('metrics/states_%s.csv' % metric, 'a') as f:
+                            f.write('%d,%s\n' % (config_index, ','.join([str(x) for x in kafka_metrics[j].iloc[0].to_list()])))
                     break
             except Exception:
                 traceback.print_exc()
@@ -257,13 +267,15 @@ class GroupManager:
                 self.logger.info(msg='Config index: %d' % exp['index'])
                 self.deploy_kafka()
                 self.k8s_api.wait_pods_ready(self.this_group['pods']['broker'])
+                self.limit_bandwidth()
                 self.config_kafka()
                 self.start_zk()
                 self.start_kafka()
                 self.create_topic(topic)
                 self.start_exp(topic, execution_time, payload)
                 self.logger.info(msg='Done')
-                # TODO: do we need metrics of followers?
+
+                # Note: we have only one broker in this project
                 self.process_state_metrics(self.this_group['pods']['broker'][0], execution_time, exp['index'])
                 self.process_latency_metrics(self.this_group['pods']['sub'][0], exp['index'])
                 self.delete_kafka()
@@ -281,9 +293,11 @@ def sample_configs(budget):
     meta_info = pd.read_csv('meta/knob_meta.csv')
     knobs = pd.DataFrame(lhs(meta_info.shape[0], samples=budget, criterion="maximin"))
     knobs = knobs.apply(
-        lambda raw_knobs: (np.ceil(raw_knobs*(meta_info['max']-meta_info['min'])+meta_info['min']) * meta_info['unit']).astype(int), axis=1)
+        lambda raw_knobs: (np.floor(raw_knobs*(meta_info['max']-meta_info['min'])+meta_info['min']) * meta_info['unit']).astype(int), axis=1)
     knobs.columns = meta_info['knob']
     knobs.reset_index(inplace=True)
+    msg_cps = ['none', 'gzip', 'snappy', 'lz4']
+    knobs['producer->compression_type'] = knobs['producer->compression_type'].apply(lambda x: msg_cps[x])
     knobs.to_csv(path_or_buf="schedule.csv", index=None)
     return knobs
 
@@ -295,8 +309,8 @@ if __name__ == '__main__':
     parser.add_argument("--from_index", type=int, default=0, help="start running test from the given index")
     parser.add_argument('--to_index', type=int, default=-1, help='stop running test at the given index')
     parser.add_argument("--budget", type=int, default=1000, help='LHS budget')
-    parser.add_argument('--num_pubs', type=int, default=1)
-    parser.add_argument('--num_brokers', type=int, default=3)
+    parser.add_argument('--num_pubs', type=int, default=3)
+    parser.add_argument('--num_brokers', type=int, default=1)
     parser.add_argument('--num_subs', type=int, default=1)
     parser.add_argument('--topic', type=str, default='nyc_taxi')
     parser.add_argument('--execution_time', type=int, default=120)
@@ -309,12 +323,14 @@ if __name__ == '__main__':
         exp_sch = pd.read_csv('schedule.csv')
     exp_sch = exp_sch.iloc[args.from_index: args.to_index, :]
 
-    with open('metrics/states.csv', 'w') as f:
-        knobs = pd.read_csv('meta/state_meta.csv')['name'].to_list()
-        f.write('index,' + ','.join(knobs) + '\n')
+    metrics = ['index', 'min','max','median','mean','std','25th','50th','75th','90th','95th','99th']
+    for m in metrics:
+        with open('metrics/states_%s.csv' % m, 'w') as f:
+            knobs = pd.read_csv('meta/state_meta.csv')['name'].to_list()
+            f.write('index,' + ','.join(knobs) + '\n')
+    
     with open('metrics/latency.csv', 'w') as f:
-        latency_metrics = ['index', 'min','max','median','mean','std','25th','50th','75th','90th','95th','99th']
-        f.write(','.join(latency_metrics) + '\n')
+        f.write(','.join(metrics) + '\n')
 
     '''
     k = 0

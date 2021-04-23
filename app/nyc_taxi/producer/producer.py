@@ -12,11 +12,17 @@ if __name__ == '__main__':
 
     parser.add_argument('--batch_size', type=int, default=16384)
     parser.add_argument('--linger_ms', type=int, default=0)
+    parser.add_argument('--compression_type', type=str, default='none', choices=['none', 'gzip', 'snappy', 'lz4'])
     args = parser.parse_args()
+
+    compression_type = None
+    if args.compression_type != 'none':
+        compression_type = args.compression_type
 
     producer = KafkaProducer(bootstrap_servers=args.bootstrap_servers,
                              batch_size=args.batch_size,
-                             linger_ms=args.linger_ms)
+                             linger_ms=args.linger_ms,
+                             compression_type=compression_type)
     
     start = time.time()
     with open(args.payload_file) as f:
