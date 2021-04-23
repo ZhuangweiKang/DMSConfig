@@ -170,7 +170,7 @@ class GroupManager:
         all_pods = []
         for e in self.this_group['pods']:
             all_pods.extend(self.this_group['pods'][e])
-        for p in pods:
+        for p in all_pods:
             self.k8s_api.limit_bw(p, 1000)
 
     def start_exp(self, topic, execution_time, payload):
