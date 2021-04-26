@@ -68,7 +68,7 @@ class K8sCluster:
                     ],
                     volumes=volumes,
                     restart_policy="Never",
-                    node_selector=dict(dmsconfig=node_label)
+                    node_selector=node_label
                 )
             ))
         self.pods.update({name: pod})
@@ -129,10 +129,9 @@ class K8sCluster:
 
     def list_container(self, find_pods):
         containers = {}
-        for pod in self.pods:
-            if pod not in find_pods:
-                continue
+        for pod in find_pods:
             node_name = self.pods[pod].spec.node_name
+            #print(self.pods[pod].status.container_statuses)
             con_ids = [con.container_id.split('docker://')[1] for con in self.pods[pod].status.container_statuses]
             if node_name not in containers:
                 containers.update({node_name: {pod: con_ids}})
@@ -146,7 +145,7 @@ class K8sCluster:
         for node in containers:
             veth_ifs.update({node: []})
             # get all ifaces from node
-            exec_command = "sudo ssh %s ip ad | grep @" % node
+            exec_command = "sudo ssh ubuntu@%s ip ad | grep @" % node
             tmp = subprocess.check_output(exec_command, shell=True).decode().strip().split('\n')
             tmp = [x.split('@')[0] for x in tmp]
             vifs = {}
@@ -169,37 +168,33 @@ class K8sCluster:
         return veth_ifs
 
     def wait_pods_ready(self, pods):
-        pods = pods[:]
-        while True:
-            try:
-                for pod in pods[:]:
-                    pod_obj = self.core_api().read_namespaced_pod_status(name=pod, namespace='default')
-                    self.pods.update({pod: pod_obj})
-                    for container_status in pod_obj.status.container_statuses:
-                        if container_status.state.running is not None:
-                            pods.remove(pod)
-            except Exception as ex:
-                pass
-            if len(pods) == 0:
-                break
+        for pod in pods:
+            while True:
+                pod_obj = self.core_api().read_namespaced_pod_status(name=pod, namespace='default')
+                try:
+                    if pod_obj.status.container_statuses[0].state.running:
+                        self.pods.update({pod: pod_obj})
+                        break
+                except:
+                    pass
 
     def limit_bw(self, pods, bandwidth=1000, detach=False):
         veths = self.list_container_vifs(pods)
         for node in veths:
             for veth in veths[node]:
                 # set download BW in node
-                cmd = "ssh %s sudo tc qdisc add dev %s root tbf rate %dmbit latency 100ms burst 1500kb mpu 64 mtu 15000" \
+                cmd = "sudo ssh ubuntu@%s sudo tc qdisc add dev %s root tbf rate %dmbit latency 10ms burst 1000kb mpu 64 mtu 1540" \
                       % (node, veth[1], bandwidth)
                 subprocess.check_output(cmd, shell=True).decode()
 
                 # set upload BW in container
-                cmd = "tc qdisc add dev eth0 root tbf rate %dmbit latency 100ms burst 1500kb mpu 64 mtu 15000" % int(bandwidth)
+                cmd = "tc qdisc add dev eth0 root tbf rate %dmbit latency 10ms burst 1000kb mpu 64 mtu 1540" % int(bandwidth)
                 self.exec_pod(veth[0], cmd, detach)
 
-    def label_node(self, node, label_val):
+    def label_node(self, node, label):
         self.core_api().patch_node(name=node, body={
             "metadata": {
-                "labels": {"dmsconfig": label_val}
+                "labels": label
             }
         })
 

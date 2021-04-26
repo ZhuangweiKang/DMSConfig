@@ -17,6 +17,7 @@ WORKDIR /app
 # install pyspark
 RUN apt-get update
 RUN apt-get install -y python python-pip
+RUN apt install -y iproute2
 RUN pip install -r requirements.txt
 RUN chmod +x *
 CMD bash

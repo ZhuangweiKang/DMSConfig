@@ -4,3 +4,4 @@ influxdb~=5.3.1
 pandas~=1.2.4
 pyzmq~=22.0.3
 numpy~=1.20.2
+sklearn

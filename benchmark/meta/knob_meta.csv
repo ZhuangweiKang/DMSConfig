@@ -1,11 +1,11 @@
 knob,default,min,max,unit,unit_str,options,data_type
-producer->batch_size,4,1,17,16384,B,,int
+producer->batch_size,16384,1,17,16384,B,,int
 producer->linger_ms,0,0,10,11,ms,,int
-producer->compression_type,0,0,4,1,#,none/gzip/snappy/lz4,str
+producer->compression_type,0,0,3,1,#,none/gzip/snappy,str
 broker->num.network.threads,3,1,25,1,#,,int
 broker->num.io.threads,8,1,25,1,#,,int
-broker->queued.max.requests,5,0,51,100,#,,int
-consumer->fetch_wait_max_ms,5,0,11,100,ms,,int
-consumer->fetch_min_bytes,1,0,17,16384,B,,int
+broker->queued.max.requests,500,1,51,100,#,,int
+consumer->fetch_wait_max_ms,500,0,11,100,ms,,int
+consumer->fetch_min_bytes,16384,0,17,16384,B,,int
 consumer->batch_interval,1,1,11,1,s,,int
 topic->partitions,1,1,6,1,#,,int
