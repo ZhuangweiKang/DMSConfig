@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: tuners
+Version: 0.1.6
+Summary: OpenAI tuners: high quality implementations of reinforcement learning algorithms
+Home-page: UNKNOWN
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Provides-Extra: test
+Provides-Extra: mpi
+Provides-Extra: all

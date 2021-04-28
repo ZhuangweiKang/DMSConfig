@@ -1,0 +1,63 @@
+Logging to ../../emulator/models
+setting up actor optimizer
+  actor shapes: [[11, 64], [64], [64], [64], [64, 64], [64], [64, 10], [10]]
+  actor params: 5706
+setting up critic optimizer
+  regularizing: critic/mlp_fc0/w:0
+  regularizing: critic/mlp_fc1/w:0
+  regularizing: critic/mlp_fc2/w:0
+  applying l2 regularization with 0.01
+  critic shapes: [[11, 64], [64], [10, 64], [64], [128, 128], [128], [128], [128], [128, 1], [1]]
+  critic params: 18369
+setting up target updates ...
+  target_actor/mlp_fc0/w:0 <- actor/mlp_fc0/w:0
+  target_actor/mlp_fc0/b:0 <- actor/mlp_fc0/b:0
+  target_actor/batch_normalization/gamma:0 <- actor/batch_normalization/gamma:0
+  target_actor/batch_normalization/beta:0 <- actor/batch_normalization/beta:0
+  target_actor/batch_normalization/moving_mean:0 <- actor/batch_normalization/moving_mean:0
+  target_actor/batch_normalization/moving_variance:0 <- actor/batch_normalization/moving_variance:0
+  target_actor/mlp_fc1/w:0 <- actor/mlp_fc1/w:0
+  target_actor/mlp_fc1/b:0 <- actor/mlp_fc1/b:0
+  target_actor/a_output/kernel:0 <- actor/a_output/kernel:0
+  target_actor/a_output/bias:0 <- actor/a_output/bias:0
+setting up target updates ...
+  target_critic/mlp_fc0/w:0 <- critic/mlp_fc0/w:0
+  target_critic/mlp_fc0/b:0 <- critic/mlp_fc0/b:0
+  target_critic/mlp_fc1/w:0 <- critic/mlp_fc1/w:0
+  target_critic/mlp_fc1/b:0 <- critic/mlp_fc1/b:0
+  target_critic/mlp_fc2/w:0 <- critic/mlp_fc2/w:0
+  target_critic/mlp_fc2/b:0 <- critic/mlp_fc2/b:0
+  target_critic/batch_normalization/gamma:0 <- critic/batch_normalization/gamma:0
+  target_critic/batch_normalization/beta:0 <- critic/batch_normalization/beta:0
+  target_critic/batch_normalization/moving_mean:0 <- critic/batch_normalization/moving_mean:0
+  target_critic/batch_normalization/moving_variance:0 <- critic/batch_normalization/moving_variance:0
+  target_critic/output/kernel:0 <- critic/output/kernel:0
+  target_critic/output/bias:0 <- critic/output/bias:0
+Using agent with the following configuration:
+dict_items([('obs0', <tf.Tensor 'obs0:0' shape=(?, 11) dtype=float32>), ('obs1', <tf.Tensor 'obs1:0' shape=(?, 11) dtype=float32>), ('terminals1', <tf.Tensor 'terminals1:0' shape=(?, 1) dtype=float32>), ('rewards', <tf.Tensor 'rewards:0' shape=(?, 1) dtype=float32>), ('actions', <tf.Tensor 'actions:0' shape=(?, 10) dtype=float32>), ('critic_target', <tf.Tensor 'critic_target:0' shape=(?, 1) dtype=float32>), ('param_noise_stddev', <tf.Tensor 'param_noise_stddev:0' shape=() dtype=float32>), ('gamma', 0.9), ('tau', 0.001), ('memory', []), ('normalize_observations', False), ('normalize_returns', False), ('action_noise', NormalActionNoise(mu=[0. 0. 0. 0. 0. 0. 0. 0. 0. 0.], sigma=[0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1])), ('param_noise', None), ('action_range', (0, 1.0)), ('return_range', (-inf, inf)), ('observation_range', (0, 1)), ('critic', <tuners.ddpg.models.Critic object at 0x7f94d277db90>), ('actor', <tuners.ddpg.models.Actor object at 0x7f94d23f8890>), ('actor_lr', 0.0001), ('critic_lr', 0.0001), ('clip_norm', None), ('enable_popart', False), ('reward_scale', 1.0), ('batch_size', 16), ('stats_sample', None), ('critic_l2_reg', 0.01), ('pri_flag', True), ('memory_size', 100000), ('per_memory', <ddpg.prio_memory.PriMemory object at 0x7f94c502f090>), ('per_memory_size', 20000), ('pointer', 0), ('per_pointer', 0), ('per_batch_size', 128), ('obs_rms', None), ('ret_rms', None), ('target_actor', <tuners.ddpg.models.Actor object at 0x7f94d23f8690>), ('target_critic', <tuners.ddpg.models.Critic object at 0x7f94d23f82d0>), ('actor_tf', <tf.Tensor 'actor/a_output/Sigmoid:0' shape=(?, 10) dtype=float32>), ('normalized_critic_tf', <tf.Tensor 'critic/output/BiasAdd:0' shape=(?, 1) dtype=float32>), ('critic_tf', <tf.Tensor 'clip_by_value_2:0' shape=(?, 1) dtype=float32>), ('normalized_critic_with_actor_tf', <tf.Tensor 'critic_1/output/BiasAdd:0' shape=(?, 1) dtype=float32>), ('critic_with_actor_tf', <tf.Tensor 'clip_by_value_3:0' shape=(?, 1) dtype=float32>), ('target_Q', <tf.Tensor 'add:0' shape=(?, 1) dtype=float32>), ('abs_errors', <tf.Tensor 'Sum:0' shape=(?,) dtype=float32>), ('actor_loss', <tf.Tensor 'Neg:0' shape=() dtype=float32>), ('actor_grads', <tf.Tensor 'concat:0' shape=(5706,) dtype=float32>), ('actor_optimizer', <tuners.common.mpi_adam.MpiAdam object at 0x7f94aae66810>), ('critic_loss', <tf.Tensor 'add_1:0' shape=() dtype=float32>), ('critic_grads', <tf.Tensor 'concat_2:0' shape=(18369,) dtype=float32>), ('critic_optimizer', <tuners.common.mpi_adam.MpiAdam object at 0x7f94ab32b910>), ('stats_ops', [<tf.Tensor 'Mean_2:0' shape=() dtype=float32>, <tf.Tensor 'Sqrt:0' shape=() dtype=float32>, <tf.Tensor 'Mean_5:0' shape=() dtype=float32>, <tf.Tensor 'Sqrt_1:0' shape=() dtype=float32>, <tf.Tensor 'Mean_8:0' shape=() dtype=float32>, <tf.Tensor 'Sqrt_2:0' shape=() dtype=float32>]), ('stats_names', ['reference_Q_mean', 'reference_Q_std', 'reference_actor_Q_mean', 'reference_actor_Q_std', 'reference_action_mean', 'reference_action_std']), ('target_init_updates', [<tf.Operation 'group_deps_2' type=NoOp>, <tf.Operation 'group_deps_4' type=NoOp>]), ('target_soft_updates', [<tf.Operation 'group_deps_3' type=NoOp>, <tf.Operation 'group_deps_5' type=NoOp>]), ('initial_state', None)])
+-------------------------------------
+| eval/best_act_latency  | 0.314    |
+| eval/best_throughput   | 0.104    |
+| eval/Q                 | -0.481   |
+| eval/return            | -0.547   |
+| reference_action_mean  | 0.401    |
+| reference_action_std   | 0.0633   |
+| reference_actor_Q_mean | -0.482   |
+| reference_actor_Q_std  | 0.0118   |
+| reference_Q_mean       | -0.552   |
+| reference_Q_std        | 0.0526   |
+| rollout/return         | -50.1    |
+| rollout/return_std     | 0        |
+| rollout/throughput     | 0.111    |
+| total/duration         | 20.2     |
+| total/episodes         | 1        |
+| total/steps            | 84       |
+| total/steps_per_second | 4.16     |
+| train/actions_mean     | 0.564    |
+| train/actions_std      | 0        |
+| train/loss_actor       | 0.412    |
+| train/loss_critic      | 1.47     |
+| train/Q_mean           | -0.31    |
+| train/steps            | 84       |
+-------------------------------------
+
