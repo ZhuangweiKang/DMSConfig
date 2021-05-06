@@ -13,6 +13,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=16384)
     parser.add_argument('--linger_ms', type=int, default=0)
     parser.add_argument('--compression_type', type=str, default='none', choices=['none', 'gzip', 'snappy', 'lz4'])
+    parser.add_argument('--buffer_memory', type=int, default=33554432)
     args = parser.parse_args()
 
     compression_type = None
@@ -22,7 +23,8 @@ if __name__ == '__main__':
     producer = KafkaProducer(bootstrap_servers=args.bootstrap_servers,
                              batch_size=args.batch_size,
                              linger_ms=args.linger_ms,
-                             compression_type=compression_type)
+                             compression_type=compression_type,
+                             buffer_memory=args.buffer_memory)
     
     start = time.time()
     with open(args.payload_file) as f:
@@ -33,6 +35,7 @@ if __name__ == '__main__':
             if not line:
                 break
             producer.send(topic=args.topic, value=line.encode())
-            time.sleep(args.sleep)
+            if args.sleep > 0:
+                time.sleep(args.sleep)
 
     producer.close()

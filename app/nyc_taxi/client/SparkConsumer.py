@@ -2,7 +2,6 @@ import os
 import argparse
 import time
 import pandas as pd
-import numpy as np
 from pyspark import SparkContext, SparkConf
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
@@ -32,7 +31,8 @@ def distance_between_cors(cor1, cor2):
 
     distance = R * c
     return abs(1000 * distance)
-    
+
+
 # convert (lon, lat) to cell relative to the START_COR
 def get_route(record):
     record = record[1].decode().split(',')
@@ -40,7 +40,8 @@ def get_route(record):
     # record latency
     with open('latency.log', 'a+') as f:
         latency = time.time() - float(record[-1])
-        f.write(str(latency)+'\n')
+        print(latency)
+        f.write(str(latency) + '\n')
 
     # pickup_longitude, pickup_latitude
     pick_lon = ceil(distance_between_cors(START_COR, (record[10], START_COR[1])) / CELL_SIZE)
@@ -56,14 +57,16 @@ def get_route(record):
     else:
         return ('%d.%d' % (int(pick_lon), int(pick_lat)), '%d.%d' % (int(drop_lon), int(drop_lat))), 1
 
+
 # define the update function
 def updateState(new, old):
     if old is None:
         old = 0
     return sum(new, old)
 
+
 # save the top 10 routes into a CSV file
-def saveTop10(rdd):
+def findTop10(rdd):
     top_10_routes = []
     if rdd.count() > 0:
         out = rdd.repartition(1).take(10)
@@ -106,7 +109,7 @@ if __name__ == '__main__':
         "metadata.broker.list": args.bootstrap_servers,
         "fetch.wait.max.ms": str(args.fetch_wait_max_ms),
         "fetch.min.bytes": str(args.fetch_min_bytes)
-        }, topics=[args.topic])
+    }, topics=[args.topic])
 
     # main process
     kafkaStream.map(lambda record: get_route(record)) \
@@ -114,7 +117,7 @@ if __name__ == '__main__':
         .reduceByKey(lambda a, b: a + b) \
         .updateStateByKey(updateState) \
         .transform(lambda rdd: rdd.sortBy(lambda x: -x[1])) \
-        .foreachRDD(saveTop10)
+        .foreachRDD(findTop10)
 
     ssc.start()
     ssc.awaitTerminationOrTimeout(args.execution_time)
