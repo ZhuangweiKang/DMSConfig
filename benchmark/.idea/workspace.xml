@@ -19,98 +19,132 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c9396790-a94c-4acf-80d3-ea60dc0c0240" name="Default Changelist" comment="">
+    <list default="true" id="3a5c116f-3c46-4c39-a950-55156793849d" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/docker_kafka.json.bk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/nyc_taxi/client/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/../app/nyc_taxi/client/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/nyc_taxi/client/consumer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../app/nyc_taxi/client/consumer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/nyc_taxi/client/producer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../app/nyc_taxi/client/producer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/nyc_taxi/client/requiresments.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/nyc_taxi/server/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/../app/nyc_taxi/server/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../auto-tuner/tuners/common/cmd_util.py" beforeDir="false" afterPath="$PROJECT_DIR$/../auto-tuner/tuners/common/cmd_util.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../auto-tuner/tuners/common/env/dms_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/../auto-tuner/tuners/common/env/dms_env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../auto-tuner/tuners/common/env/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../auto-tuner/tuners/common/env/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../auto-tuner/tuners/ddpg/ddpg.py" beforeDir="false" afterPath="$PROJECT_DIR$/../auto-tuner/tuners/ddpg/ddpg.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../auto-tuner/tuners/ddpg/ddpg_learner.py" beforeDir="false" afterPath="$PROJECT_DIR$/../auto-tuner/tuners/ddpg/ddpg_learner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../auto-tuner/tuners/ddpg/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/../auto-tuner/tuners/ddpg/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../auto-tuner/tuners/model" beforeDir="false" afterPath="$PROJECT_DIR$/../auto-tuner/tuners/model" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../auto-tuner/tuners/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/../auto-tuner/tuners/run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../auto-tuner/tuners/work.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../auto-tuner/tuners/work.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/benchmark.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/benchmark.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/K8sAPI.py" beforeDir="false" afterPath="$PROJECT_DIR$/K8sAPI.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/Manager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/k8s_cluster/dmsconfig_inv" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/dmsconfig_inv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/k8s_cluster/fecbench/fecbench_inv" beforeDir="false" afterPath="$PROJECT_DIR$/k8s_cluster/fecbench/fecbench_inv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/readme.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataformatter.py" beforeDir="false" afterPath="$PROJECT_DIR$/dataformatter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/groups.json" beforeDir="false" afterPath="$PROJECT_DIR$/groups.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/meta/knob_meta.csv" beforeDir="false" afterPath="$PROJECT_DIR$/meta/knob_meta.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/meta/state_meta.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/clean_data.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/metrics/clean_data.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/latency.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/states_25th.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/states_50th.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/states_75th.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/states_90th.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/states_95th.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/states_99th.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/states_max.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/states_mean.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/states_median.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/states_min.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/states_std.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/processed/throughput.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/latency.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/readme.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/states_25th.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/states_50th.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/states_75th.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/states_90th.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/states_95th.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/states_99th.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/states_max.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/states_mean.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/states_median.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/states_min.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/raw/states_std.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/metrics/schedule.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/enumator.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/gc_collection_count.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/gc_collection_time.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/latency.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/latency/25th.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/latency/50th.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/latency/75th.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/latency/90th.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/latency/95th.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/latency/99th.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/latency/max.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/latency/mean.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/latency/median.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/latency/min.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/log.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/memory_heap_usage_used.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/memory_non_heap_usage_used.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/memory_usage_used.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/network_request_FetchConsumer_TotalTimeMs.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/network_request_Fetch_MessageConversionsTimeMs.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/network_request_Produce_TotalTimeMs.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/network_socket_FetchConsumer_NetworkProcessorAvgIdlePercent.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/network_socket_FetchConsumer_RequestHandlerAvgIdlePercent.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/os_open_fd_count.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/os_process_cpu_time.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/progress.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/server_broker_topics_AllTopicsBytesIn.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/server_broker_topics_AllTopicsBytesOut.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/server_broker_topics_TotalFetchRequestsPerSec.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/server_broker_topics_TotalProduceRequestsPerSec.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/std.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/threading_daemon_thread_count.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/threading_peak_thread_count.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/threading_thread_count.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../emulator/models/throughput.joblib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../kafka_collectd/JMXQuery-0.1.7.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../kafka_collectd/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../kafka_collectd/docker_kafka.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../kafka_collectd/dockerkafkaplugin.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../kafka_collectd/jmxquery.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../kafka_collectd/requirements.txt" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Jupyter Notebook" />
-        <option value="Python Script" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="JupyterTrust" id="b35b1d40-943f-4d09-8b3e-ae0f9c60d879" />
-  <component name="ProjectId" id="1r62hP2966EoAMhltE4cUlwAD7b" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
-    <ConfirmationsSetting value="2" id="Add" />
-  </component>
+  <component name="ProjectId" id="1sUrBavxM6kPxxWJwotbdTtXDB2" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
-    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
-    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="true" />
-    <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
-  </component>
-  <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/k8s_cluster" />
-      <recent name="$PROJECT_DIR$/k8s_cluster/dashboard" />
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/kafka" />
-      <recent name="$PROJECT_DIR$/app/nyctaxi/consumer" />
-    </key>
-  </component>
-  <component name="RunManager">
-    <configuration name="Lhs" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="benchmark" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Lhs.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Python.Lhs" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="SvnConfiguration">
     <configuration />
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="c9396790-a94c-4acf-80d3-ea60dc0c0240" name="Default Changelist" comment="" />
-      <created>1618282337379</created>
+      <changelist id="3a5c116f-3c46-4c39-a950-55156793849d" name="Default Changelist" comment="" />
+      <created>1620937875108</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1618282337379</updated>
-      <workItem from="1618282342120" duration="17121000" />
-      <workItem from="1618348102188" duration="39813000" />
-      <workItem from="1618496028300" duration="38360000" />
+      <updated>1620937875108</updated>
+      <workItem from="1620937879444" duration="5966000" />
     </task>
     <servers />
   </component>
@@ -127,56 +161,5 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
-  </component>
-  <component name="VcsManagerConfiguration">
-    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-  </component>
-  <component name="WindowStateProjectService">
-    <state x="354" y="134" key="#Inspections" timestamp="1618370535164">
-      <screen x="0" y="0" width="1440" height="900" />
-    </state>
-    <state x="354" y="134" key="#Inspections/0.0.1440.900@0.0.1440.900" timestamp="1618370535164" />
-    <state x="706" y="347" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1618555115092">
-      <screen x="0" y="0" width="1920" height="1080" />
-    </state>
-    <state x="706" y="347" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1080@0.0.1920.1080" timestamp="1618555115092" />
-    <state x="100" y="100" width="1720" height="880" key="DiffContextDialog" timestamp="1618604656281">
-      <screen x="0" y="25" width="1440" height="800" />
-    </state>
-    <state x="100" y="100" width="1720" height="880" key="DiffContextDialog/0.25.1440.800@0.25.1440.800" timestamp="1618604656281" />
-    <state width="1398" height="245" key="GridCell.Tab.0.bottom" timestamp="1618380591968">
-      <screen x="0" y="0" width="1440" height="900" />
-    </state>
-    <state width="1398" height="245" key="GridCell.Tab.0.bottom/0.0.1440.900@0.0.1440.900" timestamp="1618380591968" />
-    <state width="2518" height="424" key="GridCell.Tab.0.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1618285696573" />
-    <state width="1398" height="245" key="GridCell.Tab.0.center" timestamp="1618380591967">
-      <screen x="0" y="0" width="1440" height="900" />
-    </state>
-    <state width="1398" height="245" key="GridCell.Tab.0.center/0.0.1440.900@0.0.1440.900" timestamp="1618380591967" />
-    <state width="2518" height="424" key="GridCell.Tab.0.center/0.0.2560.1440@0.0.2560.1440" timestamp="1618285696572" />
-    <state width="1398" height="245" key="GridCell.Tab.0.left" timestamp="1618380591966">
-      <screen x="0" y="0" width="1440" height="900" />
-    </state>
-    <state width="1398" height="245" key="GridCell.Tab.0.left/0.0.1440.900@0.0.1440.900" timestamp="1618380591966" />
-    <state width="2518" height="424" key="GridCell.Tab.0.left/0.0.2560.1440@0.0.2560.1440" timestamp="1618285696570" />
-    <state width="1398" height="245" key="GridCell.Tab.0.right" timestamp="1618380591968">
-      <screen x="0" y="0" width="1440" height="900" />
-    </state>
-    <state width="1398" height="245" key="GridCell.Tab.0.right/0.0.1440.900@0.0.1440.900" timestamp="1618380591968" />
-    <state width="2518" height="424" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1618285696573" />
-    <state x="387" y="102" key="SettingsEditor" timestamp="1618606107453">
-      <screen x="0" y="0" width="1920" height="1080" />
-    </state>
-    <state x="290" y="85" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1618452976838" />
-    <state x="387" y="102" key="SettingsEditor/0.0.1920.1080@0.0.1920.1080" timestamp="1618606107453" />
-    <state x="789" y="356" key="SettingsEditor/0.0.2560.1440@0.0.2560.1440" timestamp="1618332621694" />
-    <state x="625" y="241" width="670" height="676" key="search.everywhere.popup" timestamp="1618685871284">
-      <screen x="0" y="0" width="1920" height="1080" />
-    </state>
-    <state x="625" y="241" width="670" height="676" key="search.everywhere.popup/0.0.1920.1080@0.0.1920.1080" timestamp="1618685871284" />
-  </component>
-  <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/benchmark$Lhs.coverage" NAME="Lhs Coverage Results" MODIFIED="1618285179127" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

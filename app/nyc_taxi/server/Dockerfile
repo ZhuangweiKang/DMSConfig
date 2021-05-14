@@ -7,6 +7,8 @@ RUN tar xzf kafka_2.13-2.7.0.tgz
 RUN mv kafka_2.13-2.7.0 /kafka
 
 WORKDIR /kafka
+RUN mkdir -p data/zookeeper
+COPY zookeeper.properties config/
 RUN rm -r site-docs
 RUN rm -r bin/windows
 CMD bash

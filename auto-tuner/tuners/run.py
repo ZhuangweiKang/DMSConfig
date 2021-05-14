@@ -3,6 +3,9 @@ import os.path as osp
 import numpy as np
 import pandas as pd
 
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 from tuners.common.env import dms_env
 from tuners.common.cmd_util import common_arg_parser, parse_unknown_args
 import logger
@@ -26,9 +29,6 @@ except ImportError:
 
 def train(args, extra_args):
     env_type, env_id = get_env_type(args)
-    print('env_type: {}'.format(env_type))
-
-    total_timesteps = int(args.num_timesteps)
     seed = args.seed
 
     learn = get_learn_function(args.alg)
@@ -48,7 +48,8 @@ def train(args, extra_args):
     model = learn(
         env=env,
         seed=seed,
-        total_timesteps=total_timesteps,
+        nb_episode=args.episodes,
+        nb_epoch_cycles=args.epoch_steps,
         **alg_kwargs
     )
 
@@ -90,11 +91,10 @@ def get_learn_function_defaults(alg, env_type):
 
 
 def parse_cmdline_kwargs(args):
-    '''
+    """
     convert a list of '='-spaced command-line arguments to a dictionary, evaluating python objects when possible
-    '''
+    """
     def parse(v):
-
         assert isinstance(v, str)
         try:
             return eval(v)
@@ -125,52 +125,53 @@ def main(args):
         rank = MPI.COMM_WORLD.Get_rank()
         configure_logger(args.env_model, format_strs=[])
 
+    # train model
     model, env = train(args, extra_args)
 
     if args.save_path is not None and rank == 0:
         save_path = osp.expanduser(args.save_path)
         model.save(save_path)
 
-    if args.play:
-        logger.log("Running trained model")
-        obs = env.reset()
+    logger.log("Running trained model")
+    obs = env.reset()
 
-        state = model.initial_state if hasattr(model, 'initial_state') else None
-        dones = np.zeros((1,))
+    state = model.initial_state if hasattr(model, 'initial_state') else None
+    dones = np.zeros((1,))
 
-        episode_rew = np.zeros(1)
-        master = []
+    episode_rew = np.zeros(1)
+    master = []
 
-        best_act = None
-        best_rew = -100
+    best_act = None
+    best_rew = -100
 
-        for _ in range(1000):
-            if state is not None:
-                actions, _, state, _ = model.step(obs, S=state, M=dones)
-            else:
-                actions, _, _, _ = model.step(obs)
+    # evaluate model
+    for _ in range(args.epoch_steps):
+        if state is not None:
+            actions, _, state, _ = model.step(obs, S=state, M=dones)
+        else:
+            actions, _, _, _ = model.step(obs)
 
-            obs, rew, done, _ = env.step(actions)
-            episode_rew += rew
+        obs, rew, done, _ = env.step(actions)
+        episode_rew += rew
 
-            if rew > best_rew:
-                best_rew = rew
-                best_act = actions[0]
+        if rew > best_rew:
+            best_rew = rew
+            best_act = actions[0]
 
-            record = {
-                'best_config': best_act,
-                'current_config': str(obs), 
-                'reward': rew,
-                'throughput': env.get_throughput(),
-                'latency': env.get_latency(),
-                'best_reward': best_rew,
-                'latency_bound': env.get_latency_bound()
-            }
-            master.append(record)
+        record = {
+            'best_config': best_act,
+            'current_config': str(obs),
+            'reward': rew,
+            'throughput': env.get_throughput(),
+            'latency': env.get_latency(),
+            'best_reward': best_rew,
+            'latency_bound': env.get_latency_bound()
+        }
+        master.append(record)
 
-        # save learned action
-        master = pd.DataFrame(master, index=None)
-        master.to_csv('%s/%s-%d.csv' % (args.env_model, args.alg, args.lat_bound), index=None) # env_model is the experiment folder
+    # save learned action
+    master = pd.DataFrame(master, index=None)
+    master.to_csv('%s/%s-%d.csv' % (args.env_model, args.alg, args.lat_bound), index=False)
     env.close()
 
     return model

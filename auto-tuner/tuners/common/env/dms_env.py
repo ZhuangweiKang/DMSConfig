@@ -3,13 +3,18 @@ import numpy as np
 import gym
 from gym import spaces
 import pandas as pd
+from tuners.common.env.utils import queue
 
 
 class Simulator:
     def __init__(self, model_path, meta_path):
         self.predictors = {}
-        state_meta = pd.read_csv('%s/state_meta.csv' % meta_path)
-        states = state_meta['name'].tolist()
+        kafka_state_meta = pd.read_csv('%s/kafka_state_meta.csv' % meta_path)
+        # container_state_meta = pd.read_csv('%s/container_state_meta.csv' % meta_path)
+        # states = pd.concat([kafka_state_meta, container_state_meta], axis=0)['name']
+        states = kafka_state_meta['name'].to_list()
+        
+        states.remove('server_broker_topics_AllTopicsBytesOut')
         states.extend(['latency', 'throughput'])
         for m in states:
             self.predictors.update({m: load(model_path + '/%s.joblib' % m)})
@@ -28,16 +33,20 @@ class Simulator:
 class DMSConfigEnv(gym.Env):
     def __init__(self, seed, model_path, meta_path, latency_bound):
         act_meta = pd.read_csv('%s/knob_meta.csv' % meta_path)
-        state_meta = pd.read_csv('%s/state_meta.csv' % meta_path)
+        kafka_state_meta = pd.read_csv('%s/kafka_state_meta.csv' % meta_path)
+        # container_state_meta = pd.read_csv('%s/container_state_meta.csv' % meta_path)
+        # state_meta = pd.concat([kafka_state_meta, container_state_meta], axis=0)
+        state_meta = kafka_state_meta
 
+        # since server_broker_topics_AllTopicsBytesOut is throughput, remove it from state_meta
+        state_meta = state_meta[state_meta['name'] != 'server_broker_topics_AllTopicsBytesOut'].reset_index()
+        del state_meta['index']
         self.act_names = act_meta['knob'].tolist()
         self.obs_metrics = state_meta['name'].tolist()
         self.rew_metrics = ['latency', 'throughput']
 
         np.random.seed(seed)
 
-        # start from kafka default configuration
-        self._start_obs = np.array([float(np.random.randint(0, 1000))/1000 for _ in range(len(self.obs_metrics))])
         self._cur_obs = None
         self._cur_step = 0
 
@@ -46,16 +55,15 @@ class DMSConfigEnv(gym.Env):
         self.simulator = Simulator(model_path, meta_path)
 
         self.default_act = np.array((act_meta['default'] - act_meta['min']) / (act_meta['max'] - act_meta['min'])).reshape(1, -1)
-
-        self.num_envs = 1
-        self._last_thr = 0
-        self._score = 0
-
+        
         self._def_lat, self._def_thr = self.simulator.predict(self.default_act, self.rew_metrics)
+        
         self._best_reward = -100
-        self._lat_bound = self._def_lat / latency_bound
+        self._lat_bound = float(latency_bound) * self._def_lat
         self._latency = None
         self._throughput = None
+        self._last_thr = 0
+        self.tail_queue = queue(capacity=50)
 
     def get_reward(self, action):
         self._latency, self._throughput = self.simulator.predict(action, self.rew_metrics)
@@ -76,18 +84,39 @@ class DMSConfigEnv(gym.Env):
                 reward *= (1 + lat_over)
 
         self._last_thr = self._throughput
+
+        if self.tail_queue.is_full():
+            self.tail_queue.dequeue()
+        self.tail_queue.enqueue(reward)
+        return reward
+
+    def get_reward2(self, action):
+        self._latency, self._throughput = self.simulator.predict(action, self.rew_metrics)
+        if self._last_thr != 0:
+            delta_thr = (self._throughput-self._last_thr) / self._last_thr
+            delta_lat = (self._lat_bound-self._latency) / self._lat_bound
+            reward = delta_lat * delta_thr
+            if delta_thr < 0 and delta_lat < 0:
+                reward = -reward
+        else:
+            reward = 0
+        self._last_thr = self._throughput
+        if self.tail_queue.is_full():
+            self.tail_queue.dequeue()
+        self.tail_queue.enqueue(reward)
+        
         return reward
 
     def step(self, action):
         self._cur_obs = self.simulator.predict(action, self.obs_metrics)
         reward = self.get_reward(action)
         self._cur_step += 1
-        self._score += reward
-        done = self._score < -50
+
+        done = self.tail_queue.is_full() and (np.std(self.tail_queue.get_array()) <= 0.05)
         info = {
             'action': action, 
             'obs': self._cur_obs, 
-            'reward': reward, 
+            'reward': reward,
             'cur_step': self._cur_step, 
             'throughput': self._throughput,
             'latency': self._latency,
@@ -96,12 +125,13 @@ class DMSConfigEnv(gym.Env):
         return self._cur_obs, reward, done, info
 
     def reset(self):
-        self._cur_obs = self.get_default_obs()
+        # self._cur_obs = self.get_default_obs()
+        self._cur_obs = np.random.rand(*self.observation_space.shape)
         self._cur_step = 0
         self._last_thr = 0
         self._throughput = None
         self._latency = None
-        self._score = 0
+        self.tail_queue.reset()
         return self._cur_obs
 
     def render(self, mode=None):

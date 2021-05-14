@@ -1,0 +1,335 @@
+[
+  {
+    "MBean": "kafka_server_BrokerTopicMetrics_AllTopicsBytesIn",
+    "ObjectName": "kafka.server:type=BrokerTopicMetrics,name=BytesInPerSec",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "server_broker_topics_AllTopicsBytesIn",
+        "Table": false,
+        "Attribute": "MeanRate"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_server_BrokerTopicMetrics_AllTopicsMessagesIn",
+    "ObjectName": "kafka.server:type=BrokerTopicMetrics,name=MessagesInPerSec",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "server_broker_topics_AllTopicsMessagesIn",
+        "Table": false,
+        "Attribute": "MeanRate"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_server_BrokerTopicMetrics_AllTopicsBytesOut",
+    "ObjectName": "kafka.server:type=BrokerTopicMetrics,name=BytesOutPerSec",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "server_broker_topics_AllTopicsBytesOut",
+        "Table": false,
+        "Attribute": "MeanRate"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_server_BrokerTopicMetrics_TotalProduceRequestsPerSec",
+    "ObjectName": "kafka.server:type=BrokerTopicMetrics,name=TotalProduceRequestsPerSec",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "server_broker_topics_TotalProduceRequestsPerSec",
+        "Table": false,
+        "Attribute": "MeanRate"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_server_BrokerTopicMetrics_TotalFetchRequestsPerSec",
+    "ObjectName": "kafka.server:type=BrokerTopicMetrics,name=TotalFetchRequestsPerSec",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "server_broker_topics_TotalFetchRequestsPerSec",
+        "Table": false,
+        "Attribute": "MeanRate"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_server_DelayedOperationPurgatory_NumDelayedFetchRequests",
+    "ObjectName": "kafka.server:type=DelayedOperationPurgatory,delayedOperation=Fetch,name=PurgatorySize",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "server_purgatory_NumDelayedFetchRequests",
+        "Table": false,
+        "Attribute": "Value"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_server_DelayedOperationPurgatory_NumDelayedProduceRequests",
+    "ObjectName": "kafka.server:type=DelayedOperationPurgatory,delayedOperation=Produce,name=PurgatorySize",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "server_purgatory_NumDelayedProduceRequests",
+        "Table": false,
+        "Attribute": "Value"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_network_RequestMetrics_ProduceRequests",
+    "ObjectName": "kafka.network:type=RequestMetrics,name=RequestsPerSec,request=Produce",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "network_request_Produce_Requests",
+        "Table": false,
+        "Attribute": "MeanRate"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_network_RequestMetrics_FetchConsumerRequests",
+    "ObjectName": "kafka.network:type=RequestMetrics,name=RequestsPerSec,request=FetchConsumer",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "network_request_FetchConsumer_RequestsPerSec",
+        "Table": false,
+        "Attribute": "MeanRate"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_network_RequestMetrics_Produce_TemporaryMemoryBytes",
+    "ObjectName": "kafka.network:type=RequestMetrics,name=TemporaryMemoryBytes,request=Produce",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "network_request_Produce_TemporaryMemoryBytes",
+        "Table": false,
+        "Attribute": "Mean"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_network_RequestMetrics_Fetch_TemporaryMemoryBytes",
+    "ObjectName": "kafka.network:type=RequestMetrics,name=TemporaryMemoryBytes,request=Fetch",
+    "Values": [
+      {
+        "Type": "counter",
+        "InstancePrefix": "network_request_Fetch_TemporaryMemoryBytes",
+        "Table": false,
+        "Attribute": "Mean"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_network_RequestMetrics_Produce_TotalTimeMs",
+    "ObjectName": "kafka.network:type=RequestMetrics,name=TotalTimeMs,request=Produce",
+    "Values": [
+      {
+        "Type": "counter",
+        "InstancePrefix": "network_request_Produce_TotalTimeMs",
+        "Table": false,
+        "Attribute": "Count"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_network_RequestMetrics_FetchConsumer_TotalTimeMs",
+    "ObjectName": "kafka.network:type=RequestMetrics,name=TotalTimeMs,request=FetchConsumer",
+    "Values": [
+      {
+        "Type": "counter",
+        "InstancePrefix": "network_request_FetchConsumer_TotalTimeMs",
+        "Table": false,
+        "Attribute": "Count"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_network_RequestMetrics_Produce_ResponseSendTimeMs",
+    "ObjectName": "kafka.network:type=RequestMetrics,name=ResponseSendTimeMs,request=Produce",
+    "Values": [
+      {
+        "Type": "counter",
+        "InstancePrefix": "network_request_Produce_ResponseSendTimeMs",
+        "Table": false,
+        "Attribute": "Count"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_network_RequestMetrics_FetchConsumer_ResponseSendTimeMs",
+    "ObjectName": "kafka.network:type=RequestMetrics,name=ResponseSendTimeMs,request=FetchConsumer",
+    "Values": [
+      {
+        "Type": "counter",
+        "InstancePrefix": "network_request_FetchConsumer_ResponseSendTimeMs",
+        "Table": false,
+        "Attribute": "Count"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_network_RequestMetrics_SocketServer_NetworkProcessorAvgIdlePercent",
+    "ObjectName": "kafka.network:type=SocketServer,name=NetworkProcessorAvgIdlePercent",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "network_socket_FetchConsumer_NetworkProcessorAvgIdlePercent",
+        "Table": false,
+        "Attribute": "Value"
+      }
+    ]
+  },
+  {
+    "MBean": "kafka_network_RequestMetrics_SocketServer_RequestHandlerAvgIdlePercent",
+    "ObjectName": "kafka.server:type=KafkaRequestHandlerPool,name=RequestHandlerAvgIdlePercent",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "network_socket_FetchConsumer_RequestHandlerAvgIdlePercent",
+        "Table": false,
+        "Attribute": "MeanRate"
+      }
+    ]
+  },
+  {
+    "MBean": "jvm_localhost_Threading",
+    "ObjectName": "java.lang:type=Threading",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "threading_thread_count",
+        "Table": false,
+        "Attribute": "ThreadCount"
+      }
+    ]
+  },
+  {
+    "MBean": "jvm_localhost_Memory",
+    "ObjectName": "java.lang:type=Memory",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "memory_heap_usage",
+        "Table": false,
+        "Attribute": "HeapMemoryUsage/used"
+      },
+      {
+        "Type": "gauge",
+        "InstancePrefix": "memory_non_heap_usage",
+        "Table": false,
+        "Attribute": "NonHeapMemoryUsage/used"
+      }
+    ]
+  },
+  {
+    "MBean": "jvm_localhost_os",
+    "ObjectName": "java.lang:type=OperatingSystem",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "os_open_fd_count",
+        "Table": false,
+        "Attribute": "OpenFileDescriptorCount"
+      },
+      {
+        "Type": "counter",
+        "InstancePrefix": "os_process_cpu_time",
+        "Table": false,
+        "Attribute": "ProcessCpuTime"
+      },
+      {
+        "Type": "gauge",
+        "InstancePrefix": "os_process_cpu_load",
+        "Table": false,
+        "Attribute": "ProcessCpuLoad"
+      },
+      {
+        "Type": "gauge",
+        "InstancePrefix": "os_system_cpu_load",
+        "Table": false,
+        "Attribute": "SystemCpuLoad"
+      },
+      {
+        "Type": "gauge",
+        "InstancePrefix": "os_committed_vm_size",
+        "Table": false,
+        "Attribute": "CommittedVirtualMemorySize"
+      }
+    ]
+  },
+  {
+    "MBean": "jvm_localhost_gc",
+    "ObjectName": "java.lang:type=GarbageCollector,name=G1 Young Generation",
+    "InstanceFrom": "name",
+    "Values": [
+      {
+        "Type": "counter",
+        "InstancePrefix": "gc_collection_count",
+        "Table": false,
+        "Attribute": "CollectionCount"
+      },
+      {
+        "Type": "counter",
+        "InstancePrefix": "gc_collection_time",
+        "Table": false,
+        "Attribute": "CollectionTime"
+      },
+      {
+        "Type": "gauge",
+        "InstancePrefix": "last_gc_info",
+        "Table": false,
+        "Attribute": "LastGcInfo"
+      }
+    ]
+  },
+  {
+    "MBean": "jvm_class_loading",
+    "ObjectName": "java.lang:type=ClassLoading",
+    "InstanceFrom": "name",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "jvm_loaded_class_count",
+        "Table": false,
+        "Attribute": "LoadedClassCount"
+      },
+      {
+        "Type": "counter",
+        "InstancePrefix": "jvm_total_loaded_class_count",
+        "Table": false,
+        "Attribute": "TotalLoadedClassCount"
+      }
+    ]
+  },
+  {
+    "MBean": "jvm_class_loading",
+    "ObjectName": "java.lang:type=ClassLoading",
+    "InstanceFrom": "name",
+    "Values": [
+      {
+        "Type": "gauge",
+        "InstancePrefix": "jvm_loaded_class_count",
+        "Table": false,
+        "Attribute": "LoadedClassCount"
+      },
+      {
+        "Type": "counter",
+        "InstancePrefix": "jvm_total_loaded_class_count",
+        "Table": false,
+        "Attribute": "TotalLoadedClassCount"
+      }
+    ]
+  }
+]
