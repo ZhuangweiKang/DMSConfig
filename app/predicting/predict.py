@@ -137,5 +137,6 @@ def prediction(test_file):
     y_prediction = model.predict(new_img, batch_size=batch_size, verbose=1)
     print('Predicted: {}'.format('c{}'.format(np.argmax(y_prediction)) + ' - '+activity_map.get('c{}'.format(np.argmax(y_prediction)))))
     
-    
+    # USAGE:
+    #   prediction(file) 
 
