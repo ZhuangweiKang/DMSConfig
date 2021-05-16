@@ -128,7 +128,7 @@ def prediction(test_file):
                 'c8': 'Hair and makeup', 
                 'c9': 'Talking to passenger'}
 
-    img_brute = normal(test_file)
+    img_brute = test_file
     img_brute = cv2.resize(img_brute,(img_rows,img_cols))
     # plt.imshow(img_brute, cmap='gray')
 
