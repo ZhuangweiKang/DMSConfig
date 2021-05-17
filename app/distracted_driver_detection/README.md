@@ -8,4 +8,4 @@ Download dataset and files under data folder
     │  └─ sample_submission.csv
 
 
-Run `python3 cnn_model.py`
+Run `python3 train.py`
