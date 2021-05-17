@@ -6,6 +6,5 @@ pandas
 cv2
 keras
 sklearn
-matplotlib
 tqdm
 glob
