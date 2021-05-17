@@ -1,0 +1,34 @@
+Epoch 1/10
+449/449 [==============================] - 199s 439ms/step - loss: 1.9131 - accuracy: 0.3980 - val_loss: 0.3873 - val_accuracy: 0.8861
+
+Epoch 00001: val_loss improved from inf to 0.38725, saving model to saved_models/weights_best_vanilla.hdf5
+Epoch 2/10
+449/449 [==============================] - 191s 425ms/step - loss: 0.4133 - accuracy: 0.8688 - val_loss: 0.1817 - val_accuracy: 0.9478
+
+Epoch 00002: val_loss improved from 0.38725 to 0.18169, saving model to saved_models/weights_best_vanilla.hdf5
+Epoch 3/10
+449/449 [==============================] - 195s 435ms/step - loss: 0.2287 - accuracy: 0.9290 - val_loss: 0.0913 - val_accuracy: 0.9781
+
+Epoch 00003: val_loss improved from 0.18169 to 0.09134, saving model to saved_models/weights_best_vanilla.hdf5
+Epoch 4/10
+449/449 [==============================] - 199s 444ms/step - loss: 0.1553 - accuracy: 0.9530 - val_loss: 0.0575 - val_accuracy: 0.9866
+
+Epoch 00004: val_loss improved from 0.09134 to 0.05750, saving model to saved_models/weights_best_vanilla.hdf5
+Epoch 5/10
+449/449 [==============================] - 189s 421ms/step - loss: 0.1289 - accuracy: 0.9620 - val_loss: 0.2150 - val_accuracy: 0.9478
+
+Epoch 00005: val_loss did not improve from 0.05750
+Epoch 6/10
+449/449 [==============================] - 192s 428ms/step - loss: 0.1239 - accuracy: 0.9640 - val_loss: 0.1109 - val_accuracy: 0.9717
+
+Epoch 00006: val_loss did not improve from 0.05750
+Epoch 00006: early stopping
+141/141 [==============================] - 10s 72ms/step - loss: 0.0575 - accuracy: 0.9866
+Accuracy:
+[0.5931211113929749, 0.8870059847831726, 0.9350576996803284, 0.9535648822784424, 0.9634873867034912, 0.967222273349762]
+Test accuracy:
+[0.8860646486282349, 0.947826087474823, 0.9781494140625, 0.9866220951080322, 0.947826087474823, 0.9716833829879761]
+Loss:
+[1.2429871559143066, 0.3488295376300812, 0.20754241943359375, 0.1534867137670517, 0.1234605461359024, 0.11674083769321442]
+Test loss:
+[0.38725438714027405, 0.18168935179710388, 0.09134229272603989, 0.05750095471739769, 0.21500076353549957, 0.11091966181993484]
