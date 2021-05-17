@@ -1,0 +1,11 @@
+kafka-python
+python-snappy
+lz4
+numpy
+pandas
+cv2
+keras
+sklearn
+matplotlib
+tqdm
+glob
