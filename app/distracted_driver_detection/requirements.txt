@@ -3,4 +3,6 @@ python-snappy
 lz4
 numpy
 pandas
-cv2
+tensorflow
+keras
+opencv-python

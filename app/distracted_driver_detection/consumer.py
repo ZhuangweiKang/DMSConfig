@@ -8,6 +8,17 @@ from predict import *
 
 INTERVAL = 1
 
+activity_map = {'c0': 'Safe driving',
+                'c1': 'Texting - right',
+                'c2': 'Talking on the phone - right',
+                'c3': 'Texting - left',
+                'c4': 'Talking on the phone - left',
+                'c5': 'Operating the radio',
+                'c6': 'Drinking',
+                'c7': 'Reaching behind',
+                'c8': 'Hair and makeup',
+                'c9': 'Talking to passenger'}
+
 
 class MyConsumer(object):
     def __init__(self, args, sub_id):
@@ -52,8 +63,10 @@ class MyConsumer(object):
                     if not self.last_timestamp or (time.time() - self.last_timestamp > INTERVAL):
                         self.capture_metrics(consumer.metrics(), message.timestamp)
                     img = pickle.loads(message.value)
-                    predict(self.model, img_matrix=img)
 
+                    # predict function returns perception results
+                    y_prediction = predict(self.model, img_matrix=img)
+                    print('Predicted: {}'.format('c{}'.format(np.argmax(y_prediction)) + ' - ' + activity_map.get('c{}'.format(np.argmax(y_prediction)))))
         consumer.close()
 
     def get_latency(self):
@@ -72,6 +85,7 @@ if __name__ == '__main__':
     parser.add_argument('--topic', type=str, default='distracted_driver_detection')
     parser.add_argument('--execution_time', type=int, default=120)
     parser.add_argument('--num_subs', type=int, default=1, help='the amount of subscriber threads')
+    parser.add_argument('--print', action='store_true', default=False, help='print distracted driver detection results')
 
     parser.add_argument('--fetch_wait_max_ms', type=int, default=500)
     parser.add_argument('--fetch_min_bytes', type=int, default=1)

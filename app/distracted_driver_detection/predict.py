@@ -21,19 +21,7 @@ def predict(model, img_matrix):
     batch_size = 40
     # nb_epoch = 10
 
-    activity_map = {'c0': 'Safe driving',
-                    'c1': 'Texting - right',
-                    'c2': 'Talking on the phone - right',
-                    'c3': 'Texting - left',
-                    'c4': 'Talking on the phone - left',
-                    'c5': 'Operating the radio',
-                    'c6': 'Drinking',
-                    'c7': 'Reaching behind',
-                    'c8': 'Hair and makeup',
-                    'c9': 'Talking to passenger'}
-
     img_brute = cv2.resize(img_matrix, (img_rows, img_cols))
     new_img = img_brute.reshape(-1, img_rows, img_cols, color_type)
     y_prediction = model.predict(new_img, batch_size=batch_size, verbose=1)
-    print('Predicted: {}'.format(
-        'c{}'.format(np.argmax(y_prediction)) + ' - ' + activity_map.get('c{}'.format(np.argmax(y_prediction)))))
+    return y_prediction

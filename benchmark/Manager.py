@@ -15,12 +15,14 @@ from jmxquery import JMXConnection, JMXQuery
 MBEANS_FILE = 'docker_kafka.json'
 INTERVAL = 2
 
-DMSCONFIG_CLIENT_IMAGE = "zhuangweikang/dmsconfig_client:latest"
+DMSCONFIG_CLIENT_IMAGE = "zhuangweikang/dmsconfig_3d:latest"
 DMSCONFIG_KAFKA_IMAGE = "zhuangweikang/dmsconfig_kafka:latest"
 
 BROKER_REQ_RES = {'cpu': '4', 'memory': '8Gi'}
-CLIENT_REQ_RES = {'cpu': '2', 'memory': '4Gi'}
-ZOOKEEPER_REQ_RES = {'cpu': '2', 'memory': '4Gi'}
+# CLIENT_REQ_RES = {'cpu': '2', 'memory': '4Gi'}
+PUB_REQ_RES = {'cpu': '1', 'memory': '4Gi'}
+SUB_REQ_RES = {'cpu': '4', 'memory': '4Gi'}
+ZOOKEEPER_REQ_RES = {'cpu': '1', 'memory': '4Gi'}
 
 
 def clean():
@@ -181,15 +183,15 @@ class GroupManager:
         # create pub pods
         pod_name = 'g-%d-p' % self.gid
         # pub pods mount volume: /home/ubuntu/DMSConfig/benchmark/data -> /app/data
-        self.k8s_api.create_pod(pod_name, DMSCONFIG_CLIENT_IMAGE, CLIENT_REQ_RES, None,
+        self.k8s_api.create_pod(pod_name, DMSCONFIG_CLIENT_IMAGE, PUB_REQ_RES, None,
                                 node_label=dict(dmsconfig_pub=self.this_group['nodes']['pub']['label']),
-                                volume={'host_path': '/home/ubuntu/DMSConfig/benchmark/data',
+                                volume={'host_path': '%s/data' % os.getcwd(),
                                         'container_path': '/app/data'})
         self.this_group['pods']['pub'].append(pod_name)
 
         # create sub pods
         pod_name = 'g-%s-s' % self.gid
-        self.k8s_api.create_pod(pod_name, DMSCONFIG_CLIENT_IMAGE, CLIENT_REQ_RES, None,
+        self.k8s_api.create_pod(pod_name, DMSCONFIG_CLIENT_IMAGE, SUB_REQ_RES, None,
                                 node_label=dict(dmsconfig_sub=self.this_group['nodes']['sub']['label']))
         self.this_group['pods']['sub'].append(pod_name)
 
@@ -253,7 +255,7 @@ class GroupManager:
             cmd.append('--%s %s' % (key, str(self.topic_knobs[key])))
         self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], ' '.join(cmd))
 
-    def start_exp(self, config_index, topic, execution_time, payload):
+    def start_exp(self, config_index, topic, execution_time):
         brokers_str = ','.join(['%s:9092' % svc for svc in self.this_group['services']['kafka']])
 
         for pod in self.this_group['pods']['sub']:
@@ -273,7 +275,6 @@ class GroupManager:
                    '--sleep', self.sleep,
                    '--num_pubs', self.num_pubs,
                    '--topic', topic,
-                   '--payload_file', payload,
                    '--bootstrap_servers', brokers_str,
                    '--execution_time', str(execution_time)]
             for knob in self.pub_knobs:
@@ -289,15 +290,16 @@ class GroupManager:
         jmx_monitor.join(execution_time)
         jmx_monitor.stop_monitor()
 
-        time.sleep(3)
-
         def wait_log_ready(pod, logs):
             start = time.time()
             while True:
-                for log in logs:
-                    self.k8s_api.exec_pod(pod, 'ls %s' % log)
-                if time.time() - start > 10:
+                try:
+                    for log in logs:
+                        self.k8s_api.exec_pod(pod, 'ls %s' % log)
                     break
+                except Exception:
+                    if time.time() - start > 180:  # wait 3 minutes at most
+                        raise
     
         def write_log(fname, data):
             with open('metrics/%s' % fname, 'a+') as f:
@@ -327,7 +329,7 @@ class GroupManager:
         except Exception as ex:
             self.logger.error('No log in pod %s' % str(ex))
 
-    def run(self, schedule, topic, execution_time, payload):
+    def run(self, schedule, topic, execution_time):
         self.config_cluster()
         self.deploy_services()
         self.deploy_clients()
@@ -360,7 +362,7 @@ class GroupManager:
                 self.config_kafka()
                 self.start_kafka()
                 self.create_topic(topic)
-                self.start_exp(exp['index'], topic, execution_time, payload)
+                self.start_exp(exp['index'], topic, execution_time)
             except Exception as ex:
                 self.logger.error(str(ex))
                 self.logger.error('Config %d failed' % exp['index'])
@@ -403,7 +405,6 @@ if __name__ == '__main__':
     parser.add_argument('--topic', type=str, default='nyc_taxi')
     parser.add_argument('--execution_time', type=int, default=90)
     parser.add_argument('--sleep', type=float, default=0)
-    parser.add_argument('--payload', type=str, default='data/trip_data_1.csv', help='name of the payload file')
     parser.add_argument('--tc', action='store_true', help='enable linux TC', default=False)
     args = parser.parse_args()
 
@@ -427,5 +428,5 @@ if __name__ == '__main__':
         subset = exp_sch.iloc[range(gid * group_size, min((gid + 1) * group_size, exp_sch.shape[0]))].reset_index()
         gman = GroupManager(gid, worker_nodes[gid]['pub'], worker_nodes[gid]['sub'], worker_nodes[gid]['kafka'], args.num_pubs,
                             args.num_brokers, args.num_subs, args.sleep, args.tc)
-        exp_thr = threading.Thread(target=gman.run, args=(subset, args.topic, args.execution_time, args.payload,))
+        exp_thr = threading.Thread(target=gman.run, args=(subset, args.topic, args.execution_time,))
         exp_thr.start()
