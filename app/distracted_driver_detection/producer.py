@@ -41,7 +41,7 @@ class MyProducer(object):
         images = os.listdir(self.args.data_path)
         images = [x for x in images if 'img' in x]
         while time.time() - start < self.args.execution_time:
-            rand_img = random.sample(images, 1)  # select an image from the testing dataset randomly
+            rand_img = random.sample(images, 1)[0]  # select an image from the testing dataset randomly
             img_path = self.args.data_path + "/" + rand_img
             send_data = normal(img_path)
             producer.send(topic=self.args.topic, value=pickle.dumps(send_data))

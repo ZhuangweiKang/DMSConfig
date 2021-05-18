@@ -4,7 +4,3 @@ lz4
 numpy
 pandas
 cv2
-keras
-sklearn
-tqdm
-glob
