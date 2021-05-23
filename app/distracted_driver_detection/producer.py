@@ -4,16 +4,14 @@ import argparse
 import pickle
 import time
 from kafka import KafkaProducer
-from threading import Thread
 from utils import *
 
 INTERVAL = 1  # the interval of recording producer metrics
 
 
 class MyProducer(object):
-    def __init__(self, args, pub_id):
+    def __init__(self, args):
         self.args = args
-        self.pub_id = pub_id
         self.last_timestamp = None
         self.latency_records = []
         self.throughput_records = []
@@ -26,6 +24,7 @@ class MyProducer(object):
         self.latency_records.append(latency)
         self.throughput_records.append(throughput)
         self.last_timestamp = time.time()
+        print(latency, throughput)
 
     def produce_msg(self):
         compression_type = None
@@ -35,7 +34,8 @@ class MyProducer(object):
                                  batch_size=self.args.batch_size,
                                  linger_ms=self.args.linger_ms,
                                  compression_type=compression_type,
-                                 buffer_memory=self.args.buffer_memory)
+                                 buffer_memory=self.args.buffer_memory,
+                                 acks=self.args.acks)
 
         start = time.time()
         images = os.listdir(self.args.data_path)
@@ -44,13 +44,15 @@ class MyProducer(object):
             rand_img = random.sample(images, 1)[0]  # select an image from the testing dataset randomly
             img_path = self.args.data_path + "/" + rand_img
             send_data = normal(img_path)
-            producer.send(topic=self.args.topic, value=pickle.dumps(send_data))
+            encoded_data = pickle.dumps(send_data)
+            producer.send(topic=self.args.topic, value=encoded_data)
             if self.args.sync:
                 producer.flush()
+
             if not self.last_timestamp or (time.time() - self.last_timestamp > INTERVAL):
                 self.capture_metrics(producer.metrics())
             if self.args.sleep > 0:
-                time.sleep(self.args.sleep)
+                time.sleep(self.args.sleep/1000)
         producer.close()
 
     def get_latency(self):
@@ -65,10 +67,10 @@ if __name__ == '__main__':
     parser.add_argument('--bootstrap_servers', type=str, default='localhost:9092')
     parser.add_argument('--data_path', type=str, default='data/imgs/test')
     parser.add_argument('--topic', type=str, default='distracted_driver_detection')
-    parser.add_argument('--sleep', type=int, default=0, help='sleep in seconds between sends')
+    parser.add_argument('--sleep', type=float, default=0, help='sleep in milliseconds between sends')
     parser.add_argument('--execution_time', type=int, default=120)
     parser.add_argument('--sync', action='store_true', default=False, help='run a synchronous producer')
-    parser.add_argument('--num_pubs', default=1, type=int, help='the amount of producer threads')
+    parser.add_argument('--acks', type=int, default=1, choices=[0, 1], help='acknowledgement from broker')
 
     parser.add_argument('--batch_size', type=int, default=16384)
     parser.add_argument('--linger_ms', type=int, default=0)
@@ -76,26 +78,15 @@ if __name__ == '__main__':
     parser.add_argument('--buffer_memory', type=int, default=33554432)
     args = parser.parse_args()
 
-    threads = []
-    pubs = []
-    for i in range(args.num_pubs):  # run multiple producers as threads
-        pub = MyProducer(args, i)
-        pubs.append(pub)
-        thr = Thread(target=pub.produce_msg, args=())
-        threads.append(thr)
-        thr.start()
-
-    for thr in threads:
-        thr.join()
+    pub = MyProducer(args)
+    pub.produce_msg()
 
     latency = []
     throughput = []
     e2e_latency = []
 
-    for i in range(args.num_pubs):
-        latency.append(pubs[i].get_latency())
-        throughput.append(pubs[i].get_throughput())
-
+    latency.append(pub.get_latency())
+    throughput.append(pub.get_throughput())
     latency = np.array(latency).mean(axis=0).reshape(1, -1)
     throughput = np.array(throughput).mean(axis=0).reshape(1, -1)
     np.savetxt('latency.log', latency, fmt='%.3f', delimiter=',')

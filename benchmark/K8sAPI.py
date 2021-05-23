@@ -1,5 +1,6 @@
 import math
 import subprocess
+import time
 from kubernetes import client, config
 
 PSBENCH_PORTS = [2181, 9092, 9999]
@@ -177,6 +178,8 @@ class K8sCluster:
                         break
                 except:
                     pass
+                finally:
+                    time.sleep(1)
 
     def limit_bw(self, pods, bandwidth=1000, detach=False):
         veths = self.list_container_vifs(pods)

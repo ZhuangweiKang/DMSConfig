@@ -18,11 +18,10 @@ INTERVAL = 2
 DMSCONFIG_CLIENT_IMAGE = "zhuangweikang/dmsconfig_3d:latest"
 DMSCONFIG_KAFKA_IMAGE = "zhuangweikang/dmsconfig_kafka:latest"
 
-BROKER_REQ_RES = {'cpu': '4', 'memory': '8Gi'}
-# CLIENT_REQ_RES = {'cpu': '2', 'memory': '4Gi'}
-PUB_REQ_RES = {'cpu': '1', 'memory': '4Gi'}
-SUB_REQ_RES = {'cpu': '4', 'memory': '4Gi'}
-ZOOKEEPER_REQ_RES = {'cpu': '1', 'memory': '4Gi'}
+BROKER_REQ_RES = {'cpu': '2000m', 'memory': '4Gi'}
+PUB_REQ_RES = {'cpu': '500m', 'memory': '1Gi'}
+SUB_REQ_RES = {'cpu': '1000m', 'memory': '2Gi'}
+ZOOKEEPER_REQ_RES = {'cpu': '1000m', 'memory': '1Gi'}
 
 
 def clean():
@@ -133,20 +132,18 @@ class GroupManager:
         }
 
     def config_cluster(self):
-        pub_label = 'G%d-Pub' % self.gid  # node for publisher
+        label_val = 'G%d' % self.gid        
         self.k8s_api.label_node(node=self.this_group['nodes']['pub']['host'],
-                                label={'dmsconfig_pub': pub_label})
-        self.this_group['nodes']['pub']['label'] = pub_label
-
-        sub_label = 'G%d-Sub' % self.gid  # node for subscriber
+                                label={'dmsconfig_pub_%d' % self.gid: label_val})
+        self.this_group['nodes']['pub']['label'] = label_val
+        
         self.k8s_api.label_node(node=self.this_group['nodes']['sub']['host'],
-                                label={'dmsconfig_sub': sub_label})
-        self.this_group['nodes']['sub']['label'] = sub_label
+                                label={'dmsconfig_sub_%d' % self.gid: label_val})
+        self.this_group['nodes']['sub']['label'] = label_val
 
-        server_label = 'G%d-Server' % self.gid  # node for kafka server
         self.k8s_api.label_node(node=self.this_group['nodes']['server']['host'],
-                                label={'dmsconfig_server': server_label})
-        self.this_group['nodes']['server']['label'] = server_label
+                                label={'dmsconfig_server_%d' % self.gid: label_val})
+        self.this_group['nodes']['server']['label'] = label_val
 
     def deploy_services(self):
         pod_name = 'g-%d-zk' % self.gid
@@ -161,14 +158,14 @@ class GroupManager:
         pod_name = 'g-%d-zk' % self.gid
         self.k8s_api.create_pod(name=pod_name, image=DMSCONFIG_KAFKA_IMAGE, resource_limit=ZOOKEEPER_REQ_RES,
                                 command=None,
-                                node_label=dict(dmsconfig_server=self.this_group['nodes']['server']['label']))
+                                node_label={'dmsconfig_server_%d' % self.gid : self.this_group['nodes']['server']['label']})
         self.this_group['pods']['zookeeper'].append(pod_name)
 
         for j in range(self.num_brokers):
             pod_name = 'g-%d-b-%d' % (self.gid, j)
             envs = [{'name': 'JMX_PORT', 'value': '9999'}]
             self.k8s_api.create_pod(pod_name, DMSCONFIG_KAFKA_IMAGE, BROKER_REQ_RES, None,
-                                    node_label=dict(dmsconfig_server=self.this_group['nodes']['server']['label']),
+                                    node_label={'dmsconfig_server_%d' % self.gid : self.this_group['nodes']['server']['label']},
                                     envs=envs)
             self.this_group['pods']['broker'].append(pod_name)
 
@@ -180,20 +177,22 @@ class GroupManager:
         self.this_group['pods']['zookeeper'] = []
 
     def deploy_clients(self):
-        # create pub pods
-        pod_name = 'g-%d-p' % self.gid
-        # pub pods mount volume: /home/ubuntu/DMSConfig/benchmark/data -> /app/data
-        self.k8s_api.create_pod(pod_name, DMSCONFIG_CLIENT_IMAGE, PUB_REQ_RES, None,
-                                node_label=dict(dmsconfig_pub=self.this_group['nodes']['pub']['label']),
-                                volume={'host_path': '%s/data' % os.getcwd(),
-                                        'container_path': '/app/data'})
-        self.this_group['pods']['pub'].append(pod_name)
+        for i in range(self.num_pubs):
+            # create pub pods
+            pod_name = 'g-%d-p-%d' % (self.gid, i)
+            # pub pods mount volume: /home/ubuntu/DMSConfig/benchmark/data -> /app/data
+            self.k8s_api.create_pod(pod_name, DMSCONFIG_CLIENT_IMAGE, PUB_REQ_RES, None,
+                                    node_label={'dmsconfig_pub_%d' % self.gid : self.this_group['nodes']['pub']['label']},
+                                    volume={'host_path': '%s/data' % os.getcwd(),
+                                            'container_path': '/app/data'})
+            self.this_group['pods']['pub'].append(pod_name)
 
-        # create sub pods
-        pod_name = 'g-%s-s' % self.gid
-        self.k8s_api.create_pod(pod_name, DMSCONFIG_CLIENT_IMAGE, SUB_REQ_RES, None,
-                                node_label=dict(dmsconfig_sub=self.this_group['nodes']['sub']['label']))
-        self.this_group['pods']['sub'].append(pod_name)
+        for i in range(self.num_subs):
+            # create sub pods
+            pod_name = 'g-%s-s-%d' % (self.gid, i)
+            self.k8s_api.create_pod(pod_name, DMSCONFIG_CLIENT_IMAGE, SUB_REQ_RES, None,
+                                    node_label={'dmsconfig_sub_%d' % self.gid : self.this_group['nodes']['sub']['label']})
+            self.this_group['pods']['sub'].append(pod_name)
 
     def config_kafka(self):
         for j, pod in enumerate(self.this_group['pods']['broker']):
@@ -205,7 +204,9 @@ class GroupManager:
                 "advertised.listeners": "PLAINTEXT://%s:9092" % self.this_group['services']['kafka'][j],
                 "zookeeper.connect": "%s:2181" % self.this_group['services']['zookeeper'][0],
                 "delete.topic.enable": 'true',
-                "log.dirs": "/kafka/logs"
+                "log.cleaner.enable": 'true',
+                "log.dirs": "/kafka/logs",
+                "zookeeper.connection.timeout.ms": 60000
             })
 
             with open('runtime/%s-server.properties' % pod, 'w') as f:
@@ -218,12 +219,6 @@ class GroupManager:
     def start_zk(self):
         cmd = './bin/zookeeper-server-start.sh config/zookeeper.properties'
         self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], cmd, detach=True)
-        while True:
-            try:
-                self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], 'pgrep java')
-                break
-            except:
-                pass
 
     def start_kafka(self):
         for broker in self.this_group['pods']['broker']:
@@ -235,22 +230,22 @@ class GroupManager:
         while time.time() - start < 60:
             cmd = './bin/zookeeper-shell.sh localhost:2181 ls /brokers/ids | tail -n 1'
             try:
-                avail_brokers = self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], cmd).replace('[',
-                                                                                                            '').replace(
-                    ']', '').split(',')
+                avail_brokers = self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], cmd).replace('[', '').replace(']', '').split(',')
                 avail_brokers = [int(x) for x in avail_brokers]
                 if len(self.this_group['pods']['broker']) == len(avail_brokers):
                     no_broker = False
                     break
             except Exception as ex:
                 pass
+            time.sleep(1)
         if no_broker:
             self.logger.error('Failed to start broker')
 
     def create_topic(self, topic):
         cmd = ['./bin/kafka-topics.sh --zookeeper localhost:2181',
                '--create', '--topic', topic,
-               '--replication-factor %d' % (len(self.this_group['pods']['broker']))]
+               '--replication-factor %d' % (len(self.this_group['pods']['broker'])),
+               '--partitions %d' % self.num_subs]  # set the number of partition as consumer number
         for key in self.topic_knobs:
             cmd.append('--%s %s' % (key, str(self.topic_knobs[key])))
         self.k8s_api.exec_pod(self.this_group['pods']['zookeeper'][0], ' '.join(cmd))
@@ -261,7 +256,6 @@ class GroupManager:
         for pod in self.this_group['pods']['sub']:
             cmd = ['python3', 'consumer.py',
                    '--topic', topic,
-                   '--num_subs', self.num_subs,
                    '--bootstrap_servers', brokers_str,
                    '--execution_time', str(execution_time)]
             for knob in self.sub_knobs:
@@ -273,7 +267,6 @@ class GroupManager:
         for pod in self.this_group['pods']['pub']:
             cmd = ['python3', 'producer.py',
                    '--sleep', self.sleep,
-                   '--num_pubs', self.num_pubs,
                    '--topic', topic,
                    '--bootstrap_servers', brokers_str,
                    '--execution_time', str(execution_time)]
@@ -298,36 +291,50 @@ class GroupManager:
                         self.k8s_api.exec_pod(pod, 'ls %s' % log)
                     break
                 except Exception:
-                    if time.time() - start > 180:  # wait 3 minutes at most
+                    if time.time() - start > 60:  # wait 10 seconds at most
                         raise
+                    else:
+                        time.sleep(1)
     
         def write_log(fname, data):
+            data = [str(x) for x in data]
+            data = ','.join(data)
             with open('metrics/%s' % fname, 'a+') as f:
                 f.write('%d,%s\n' % (config_index, data))
 
-        try:
-            sub0 = self.this_group['pods']['sub'][0]
-            wait_log_ready(sub0, ['latency.log', 'throughput.log', 'e2e_latency.log'])
-            latency = self.k8s_api.exec_pod(sub0, 'cat latency.log').strip('\n')
-            if len(latency) > 0:
-                write_log('consumer-latency.csv', latency)
-            throughput = self.k8s_api.exec_pod(sub0, 'cat throughput.log').strip('\n')
-            if len(throughput) > 0:
-                write_log('consumer-throughput.csv', throughput)
-            e2e_latency = self.k8s_api.exec_pod(sub0, 'cat e2e_latency.log').strip('\n')
-            if len(e2e_latency) > 0:
-                write_log('consumer-e2e_latency.csv', e2e_latency)
+        latency_samples = []
+        throughput_samples = []
+        e2e_latency_samples = []
+        process_metrics = lambda data_str: [float(x) for x in data_str.split(',')]
+        for sub in self.this_group['pods']['sub']:
+            wait_log_ready(sub, ['latency.log', 'throughput.log', 'e2e_latency.log'])
+            latency_samples.append(process_metrics(self.k8s_api.exec_pod(sub, 'cat latency.log').strip('\n')))
+            throughput_samples.append(process_metrics(self.k8s_api.exec_pod(sub, 'cat throughput.log').strip('\n')))
+            e2e_latency_samples.append(process_metrics(self.k8s_api.exec_pod(sub, 'cat e2e_latency.log').strip('\n')))
 
-            pub = self.this_group['pods']['pub'][0]
+        if np.array(latency_samples).shape[1] == 6:
+            mean_latency = np.mean(latency_samples, axis=0)
+            mean_throughput = np.mean(throughput_samples, axis=0)
+            mean_e2e_latency = np.mean(e2e_latency_samples, axis=0)
+
+            write_log('consumer-latency.csv', mean_latency)
+            write_log('consumer-throughput.csv', mean_throughput * len(self.this_group['pods']['pub']))
+            write_log('consumer-e2e_latency.csv', mean_e2e_latency)
+
+        latency_samples = []
+        throughput_samples = []
+        for pub in self.this_group['pods']['pub']:
             wait_log_ready(pub, ['latency.log', 'throughput.log'])
-            latency = self.k8s_api.exec_pod(pub, 'cat latency.log').strip('\n')
-            throughput = self.k8s_api.exec_pod(pub, 'cat throughput.log').strip('\n')
-            if len(latency) > 0:
-                write_log('producer-latency.csv', latency)
-            if len(throughput) > 0:
-                write_log('producer-throughput.csv', throughput)
-        except Exception as ex:
-            self.logger.error('No log in pod %s' % str(ex))
+            latency_samples.append(process_metrics(self.k8s_api.exec_pod(pub, 'cat latency.log').strip('\n')))
+            throughput_samples.append(process_metrics(self.k8s_api.exec_pod(pub, 'cat throughput.log').strip('\n')))
+        
+        if np.array(latency_samples).shape[1] == 6:
+            mean_latency = np.mean(latency_samples, axis=0)
+            mean_throughput = np.mean(throughput_samples, axis=0)
+
+            write_log('producer-latency.csv', mean_latency)
+            write_log('producer-throughput.csv', mean_throughput * len(self.this_group['pods']['sub']))
+
 
     def run(self, schedule, topic, execution_time):
         self.config_cluster()
@@ -335,10 +342,13 @@ class GroupManager:
         self.deploy_clients()
         self.k8s_api.wait_pods_ready(self.this_group['pods']['pub'] + self.this_group['pods']['sub'])
         if self.enable_tc:
-            self.k8s_api.limit_bw(self.this_group['pods']['pub'] + self.this_group['pods']['sub'], 1000)
+            self.k8s_api.limit_bw(self.this_group['pods']['pub'], 100)
+            self.k8s_api.limit_bw(self.this_group['pods']['sub'], 1000)
         columns = list(schedule.columns[2:])
 
-        for _, exp in schedule.iterrows():
+        index = 0
+        while index < schedule.shape[0]:
+            exp = schedule.iloc[index]
             try:
                 for col in columns:
                     knob_entity = col.split('->')[0]
@@ -355,7 +365,6 @@ class GroupManager:
                 self.logger.info(msg='Config index: %d' % exp['index'])
                 self.deploy_kafka()
                 self.k8s_api.wait_pods_ready(self.this_group['pods']['broker'] + self.this_group['pods']['zookeeper'])
-                time.sleep(2)
                 if self.enable_tc:
                     self.k8s_api.limit_bw(self.this_group['pods']['broker'] + self.this_group['pods']['zookeeper'], 1000)
                 self.start_zk()
@@ -364,14 +373,14 @@ class GroupManager:
                 self.create_topic(topic)
                 self.start_exp(exp['index'], topic, execution_time)
             except Exception as ex:
-                self.logger.error(str(ex))
-                self.logger.error('Config %d failed' % exp['index'])
+                self.logger.error('Config %d failed due to: %s' % (exp['index'], str(ex)))
                 for pod in self.this_group['pods']['pub']:
                     self.k8s_api.exec_pod(pod, 'pgrep python3 | xargs kill', detach=True)
                 for pod in self.this_group['pods']['sub']:
                     self.k8s_api.exec_pod(pod, 'pgrep java | xargs kill', detach=True)
-            finally:
-                self.delete_kafka()
+
+            self.delete_kafka()
+            index += 1
 
 
 def sample_configs(budget):
@@ -381,14 +390,13 @@ def sample_configs(budget):
     :return:
     """
     meta_info = pd.read_csv('meta/knob_meta.csv')
-    knobs = pd.DataFrame(lhs(meta_info.shape[0], samples=budget, criterion="maximin"))
+    knobs = pd.DataFrame(lhs(meta_info.shape[0], samples=budget))
     knobs = knobs.apply(
-        lambda raw_knobs: (np.floor(raw_knobs * (meta_info['max'] - meta_info['min']) + meta_info['min']) * meta_info[
-            'unit']).astype(int), axis=1)
+        lambda raw_knobs: (np.ceil(raw_knobs * meta_info['max'])).astype(int), axis=1)
     knobs.columns = meta_info['knob']
     knobs.reset_index(inplace=True)
     msg_cps = ['none', 'gzip', 'snappy', 'lz4']
-    knobs['producer->compression_type'] = knobs['producer->compression_type'].apply(lambda x: msg_cps[x])
+    knobs['producer->compression_type'] = knobs['producer->compression_type'].apply(lambda x: msg_cps[x-1])
     knobs.to_csv(path_or_buf="schedule.csv", index=None)
     return knobs
 
@@ -401,8 +409,8 @@ if __name__ == '__main__':
     parser.add_argument("--budget", type=int, default=1000, help='LHS budget')
     parser.add_argument('--num_pubs', type=int, default=3)
     parser.add_argument('--num_brokers', type=int, default=1)
-    parser.add_argument('--num_subs', type=int, default=3)
-    parser.add_argument('--topic', type=str, default='nyc_taxi')
+    parser.add_argument('--num_subs', type=int, default=2)
+    parser.add_argument('--topic', type=str, default='distracted_driver_detection')
     parser.add_argument('--execution_time', type=int, default=90)
     parser.add_argument('--sleep', type=float, default=0)
     parser.add_argument('--tc', action='store_true', help='enable linux TC', default=False)

@@ -23,5 +23,5 @@ def predict(model, img_matrix):
 
     img_brute = cv2.resize(img_matrix, (img_rows, img_cols))
     new_img = img_brute.reshape(-1, img_rows, img_cols, color_type)
-    y_prediction = model.predict(new_img, batch_size=batch_size, verbose=1)
+    y_prediction = model.predict(new_img, batch_size=batch_size, verbose=0)
     return y_prediction
