@@ -1,1 +1,0 @@
-The testing dataset is unlabeled. CNN model should output the probability of each type of behavior learned from the images.

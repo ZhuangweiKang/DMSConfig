@@ -1,1 +1,0 @@
-This is the training dataset of the distracted driver detection problem, where each sub-folder(c#) represents a class of driver action.

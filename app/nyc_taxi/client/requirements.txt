@@ -1,5 +1,0 @@
-kafka-python
-python-snappy
-lz4
-numpy
-pandas

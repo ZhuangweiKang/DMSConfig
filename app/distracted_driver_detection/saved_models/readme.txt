@@ -1,1 +1,0 @@
-CNN parameters will be saved in a file called weights_best_vanilla.hdf5 in this folder.

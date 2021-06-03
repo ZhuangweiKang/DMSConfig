@@ -1,8 +1,0 @@
-kafka-python
-python-snappy
-lz4
-numpy
-pandas
-tensorflow
-keras
-opencv-python
